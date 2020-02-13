@@ -20,7 +20,22 @@ namespace ConsultationsProject.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            Patient patient1 = new Patient
+            {
+                FirstName = "Dmitry",
+                LastName = "Panaev",
+                BirthDate = DateTime.Parse("01/30/2000"),
+                Patronymic = "Vladimirovich",
+                PensionNumber = "None"
+            };
+            Patient patient2;
+            using(PatientsContext db = new PatientsContext())
+            {
+                db.Patients.Add(patient1);
+                db.SaveChanges();
+                patient2 = db.Patients.FirstOrDefault();
+            }
+            return View(patient2);
         }
 
         public IActionResult Privacy()
