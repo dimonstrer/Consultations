@@ -10,7 +10,6 @@ namespace ConsultationsProject.Models
     {
         public PatientsContext()
         {
-            Database.EnsureCreated();
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

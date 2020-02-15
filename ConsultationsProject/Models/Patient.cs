@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -11,14 +12,22 @@ namespace ConsultationsProject.Models
     {
         [Key,DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int PatientId { get; set; }
-        [Required]
+        [Display(Name="Имя")]
+        [Required(ErrorMessage ="Не указано имя пациента")]
         public string FirstName { get; set; }
-        [Required]
+        [Display(Name = "Фамилия")]
+        [Required(ErrorMessage = "Не указано фамилия пациента")]
         public string LastName { get; set; }
+        [Display(Name = "Отчество (если присутствует)")]
         public string Patronymic { get; set; }
-        [Required]
+        [Display(Name = "Дата рождения")]
+        [Required(ErrorMessage = "Не указана дата рождения пациента")]
         public DateTime BirthDate { get; set; }
-        [Required]
+        [Display(Name = "Пол")]
+        [Required(ErrorMessage = "Не указан пол пациента")]
+        public string Gender { get; set; }
+        [Display(Name = "СНИЛС")]
+        [Required(ErrorMessage = "Не указан СНИЛС пациента")]
         public string PensionNumber { get; set; }
         public List<Consultation> Consultations { get; set; }
     }
