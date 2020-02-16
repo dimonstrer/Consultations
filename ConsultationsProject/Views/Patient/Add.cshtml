@@ -1,12 +1,12 @@
 ﻿@model Patient
 
 @{
-    ViewData["Title"] = "Add patient";
+    ViewData["Title"] = "Новый пациент";
 }
 
 <h1>Новый пациент</h1>
 
-<form asp-controller="Patient" asp-action="Add">
+<form asp-controller="Patient" asp-action="Add" method="post">
     <div class="form-group">
         <label asp-for="FirstName"></label>
         <input type="text" asp-for="FirstName" class="form-control" />

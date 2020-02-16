@@ -26,7 +26,7 @@ namespace ConsultationsProject.Controllers
                 {
                     patient.PensionNumber = Regex.Replace(patient.PensionNumber, "[^0-9]", "");
                     var result = db.Patients.FromSqlInterpolated
-                        ($"SELECT * FROM PATIENTS WHERE PensionNumber = {patient.PensionNumber}").FirstOrDefault();
+                        ($"SELECT TOP 1 * FROM PATIENTS WHERE PensionNumber = {patient.PensionNumber}");
                     if (result == null)
                     {
                         db.Patients.Add(patient);
@@ -45,7 +45,10 @@ namespace ConsultationsProject.Controllers
         {
             using(PatientsContext db = new PatientsContext())
             {
-                var patient = db.Patients.FromSqlRaw($"SELECT * FROM PATIENTS WHERE PatientId = {id}").FirstOrDefault();
+                var patient = db.Patients
+                    .Include(x => x.Consultations)
+                    .Where(x => x.PatientId == id)
+                    .FirstOrDefault();
                 if (patient != null)
                     return View(patient);
                 else

@@ -1,0 +1,26 @@
+﻿@model Consultation
+@{
+    ViewData["Title"] = "Новая консультация";
+}
+
+<h1>Новая консультация</h1>
+
+<form asp-controller="Consultation" asp-action="Add" method="post">
+    <input type="hidden" name="PatientId" value="@ViewBag.PatientId" />
+    <div class="form-group">
+        <label asp-for="Day"></label>
+        <input type="date" asp-for="Day" class="form-control" />
+        <span asp-validation-for="Day"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Time"></label>
+        <input type="time" asp-for="Time" class="form-control" />
+        <span asp-validation-for="Time"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Symptoms"></label>
+        <textarea rows="10" cols="60" asp-for="Symptoms" class="form-control"></textarea>
+        <span asp-validation-for="Symptoms"></span>
+    </div>
+    <input type="submit" value="Создать" class="btn btn-success" />
+</form>
