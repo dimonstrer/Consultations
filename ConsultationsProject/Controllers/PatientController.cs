@@ -41,5 +41,16 @@ namespace ConsultationsProject.Controllers
             }
             return View(patient);
         }
+        public IActionResult Get(int id)
+        {
+            using(PatientsContext db = new PatientsContext())
+            {
+                var patient = db.Patients.FromSqlRaw($"SELECT * FROM PATIENTS WHERE PatientId = {id}").FirstOrDefault();
+                if (patient != null)
+                    return View(patient);
+                else
+                    return NotFound();
+            }
+        }
     }
 }

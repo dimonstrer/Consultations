@@ -1,8 +1,39 @@
-﻿@{
+﻿@model IEnumerable<Patient>
+@{
     ViewData["Title"] = "Home Page";
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4">Список пациентов</h1>
+    <input type="button" class="btn btn-success my-3" onclick="newPatient()" value="Добавить"/>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ФИО</th>
+                <th>Пол</th>
+                <th>Дата рождения</th>
+                <th>СНИЛС</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Patient p in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.ActionLink(@String.Format(p.LastName + " " + @p.FirstName + " " + @p.Patronymic),
+                            "Get", "Patient", new { id = p.PatientId })
+                    </td>
+                    <td>@p.Gender[0]</td>
+                    <td>@p.BirthDate.ToString("d MMM yyyy")</td>
+                    <td>@p.PensionNumber</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>
+
+<script>
+    function newPatient() {
+        location.href = '@Url.Action("Add","Patient")';
+    }
+</script>
