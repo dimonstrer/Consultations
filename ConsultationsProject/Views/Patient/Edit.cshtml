@@ -1,10 +1,9 @@
 ﻿@model Patient
-
 @{
-    ViewData["Title"] = "Новый пациент";
+    ViewData["Title"] = "Изменение пациента";
 }
 
-<h1>Новый пациент</h1>
+<h1>Изменение пациента</h1>
 
 <form asp-controller="Patient" asp-action="Add" method="post">
     <div class="form-group">
@@ -30,7 +29,7 @@
     <div class="form-group">
         <label asp-for="Gender"></label>
         <select type="text" asp-for="Gender" class="form-control">
-            <option selected="selected" disabled="disabled">Выберите пол</option>
+            <option disabled="disabled">Выберите пол</option>
             <option>Мужской</option>
             <option>Женский</option>
         </select>
@@ -41,9 +40,8 @@
         <input type="text" asp-for="PensionNumber" class="form-control pension-number" />
         <span asp-validation-for="PensionNumber"></span>
     </div>
-    <input type="submit" value="Создать" class="btn btn-success" />
+    <input type="submit" value="Изменить" class="btn btn-success" />
 </form>
-
 
 @section scripts{
     @*JQ validation*@

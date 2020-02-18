@@ -1,12 +1,13 @@
 ﻿@model Consultation
 @{
-    ViewData["Title"] = "Новая консультация";
+    ViewData["Title"] = "Изменение консультации";
 }
 
-<h1>Новая консультация</h1>
+<h1>Изменение консультации</h1>
 
-<form asp-controller="Consultation" asp-action="Add" method="post">
-    <input type="hidden" name="PatientId" value="@ViewBag.PatientId" />
+<form asp-controller="Consultation" asp-action="Edit" method="post">
+    <input asp-for="ConsultationId" hidden="hidden" />
+    <input asp-for="PatientId" hidden="hidden" />
     <div class="form-group">
         <div class="input-group date" id="datetimepicker4" data-target-input="nearest">
             <input asp-for="Day" type="text" class="form-control datetimepicker-input" data-target="#datetimepicker4" />
@@ -22,10 +23,10 @@
     </div>
     <div class="form-group">
         <label asp-for="Symptoms"></label>
-        <textarea rows="10" cols="60" asp-for="Symptoms" class="form-control"></textarea>
+        <textarea rows="10" cols="60" asp-for="Symptoms" class="form-control" ></textarea>
         <span asp-validation-for="Symptoms"></span>
     </div>
-    <input type="submit" value="Создать" class="btn btn-success" />
+    <input type="submit" value="Изменить" class="btn btn-success" />
 </form>
 
 @section scripts {
@@ -34,6 +35,7 @@
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/js/tempusdominus-bootstrap-4.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/css/tempusdominus-bootstrap-4.min.css" />
     <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+
     <script type="text/javascript">
         $(document).ready(function () {
             $('#datetimepicker4').datetimepicker({

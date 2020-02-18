@@ -74,5 +74,50 @@ namespace ConsultationsProject.Controllers
                 return PartialView(result);
             }
         }
+
+        public IActionResult Edit(int id)
+        {
+            using(PatientsContext db = new PatientsContext())
+            {
+                var patient = db.Patients.Find(id);
+                if (patient != null)
+                {
+                    return View(patient);
+                }
+                return NotFound();
+            }
+        }
+
+        [HttpPost]
+        public IActionResult Edit(Patient patient)
+        {
+            using(PatientsContext db = new PatientsContext())
+            {
+                var _patient = db.Patients.Find(patient.PatientId);
+                if (_patient != null)
+                {
+                    db.Patients.Update(patient);
+                    db.SaveChanges();
+                    return RedirectToAction("Get", "Patient", new { id = patient.PatientId });
+                }
+                return NotFound();
+            }
+        }
+
+        [HttpDelete]
+        public IActionResult Delete(int id)
+        {
+            using(PatientsContext db = new PatientsContext())
+            {
+                var patient = db.Patients.Find(id);
+                if (patient != null)
+                {
+                    db.Remove(patient);
+                    db.SaveChanges();
+                    return RedirectToAction("Index", "Home");
+                }
+                return NotFound();
+            }
+        }
     }
 }
