@@ -5,7 +5,8 @@
 
 <div class="text-center">
     <h1 class="display-4">Список пациентов</h1>
-    <input type="button" class="btn btn-success my-3" onclick="newPatient()" value="Добавить"/>
+    <input type="button" class="btn btn-success my-3" onclick="newPatient()" value="Добавить" />
+    <input type="text" class="form-control" id="search" placeholder="Введите ФИО или СНИЛС" onkeydown="updateItems()" />
     <table class="table table-striped">
         <thead>
             <tr>
@@ -32,8 +33,43 @@
     </table>
 </div>
 
+@section scripts{ 
 <script>
     function newPatient() {
         location.href = '@Url.Action("Add","Patient")';
     }
 </script>
+
+<script>
+    async function updateItems() {
+        if (this.timer) {
+        window.clearTimeout(this.timer);
+        }
+        this.timer = window.setTimeout(getItems, 1000);
+    }
+
+    async function getItems() {
+        let value = document.getElementById('search').value;
+        let url = '@Url.Action("List","Patient")';
+        let num = value.split('-').join('').split(' ').join('');
+        if (!isNaN(num)) {
+            url += '?pension=' + num;
+        }
+        else {
+            url += '?name=' + value;
+        }
+        let response = await fetch(url);
+        if (response.ok) {
+            let result = await response.text();
+            changeItems(result);
+        }
+        else {
+        alert("Ошибка HTTP: " + response.status);
+        }
+    }
+    function changeItems(items) {
+        let tableBody = document.getElementsByTagName('tbody')[0];
+        tableBody.innerHTML = items;
+    }
+</script>
+}

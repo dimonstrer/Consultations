@@ -24,3 +24,7 @@
     </div>
     <input type="submit" value="Создать" class="btn btn-success" />
 </form>
+
+@section scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

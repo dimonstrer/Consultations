@@ -22,11 +22,11 @@ namespace ConsultationsProject.Controllers
         {
             if (ModelState.IsValid)
             {
-                using(PatientsContext db = new PatientsContext())
+                using (PatientsContext db = new PatientsContext())
                 {
                     patient.PensionNumber = Regex.Replace(patient.PensionNumber, "[^0-9]", "");
                     var result = db.Patients.FromSqlInterpolated
-                        ($"SELECT TOP 1 * FROM PATIENTS WHERE PensionNumber = {patient.PensionNumber}");
+                        ($"SELECT TOP 1 * FROM PATIENTS WHERE PensionNumber = {patient.PensionNumber}").FirstOrDefault();
                     if (result == null)
                     {
                         db.Patients.Add(patient);
@@ -43,7 +43,7 @@ namespace ConsultationsProject.Controllers
         }
         public IActionResult Get(int id)
         {
-            using(PatientsContext db = new PatientsContext())
+            using (PatientsContext db = new PatientsContext())
             {
                 var patient = db.Patients
                     .Include(x => x.Consultations)
@@ -53,6 +53,25 @@ namespace ConsultationsProject.Controllers
                     return View(patient);
                 else
                     return NotFound();
+            }
+        }
+
+        public IActionResult List(string name, string pension)
+        {
+            using (PatientsContext db = new PatientsContext())
+            {
+                var patients = db.Patients.AsEnumerable();
+                if (!String.IsNullOrEmpty(name))
+                {
+                    patients = patients.Where(x => EF.Functions.Like
+                    (String.Concat(x.FirstName, " ", x.LastName, " ", x.Patronymic), "%" + name + "%"));
+                }
+                if (!String.IsNullOrEmpty(pension))
+                {
+                    patients = patients.Where(x => EF.Functions.Like(x.PensionNumber, pension + "%"));
+                }
+                var result = patients.ToList();
+                return PartialView(result);
             }
         }
     }

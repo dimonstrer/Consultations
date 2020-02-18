@@ -1,0 +1,17 @@
+﻿@model IEnumerable<Patient>
+@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+@foreach (Patient p in Model)
+{
+    <tr>
+        <td>
+            @Html.ActionLink(@String.Format(p.LastName + " " + @p.FirstName + " " + @p.Patronymic),
+                "Get", "Patient", new { id = p.PatientId })
+        </td>
+        <td>@p.Gender[0]</td>
+        <td>@p.BirthDate.ToString("d MMM yyyy")</td>
+        <td>@p.PensionNumber</td>
+    </tr>
+}
