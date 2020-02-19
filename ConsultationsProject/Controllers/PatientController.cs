@@ -32,9 +32,9 @@ namespace ConsultationsProject.Controllers
                 {
                     if (patient == null)
                     {
-                        logger.LogError("Ошибка связывания модели при создании пациента.");
+                        logger.LogError("При добавлении пациента произошла ошибка связывания модели.");
                         return View("Error",
-                            new ErrorViewModel { Message = "Произошла ошибка связывания модели при добавлении нового пациента." });
+                            new ErrorViewModel { Message = "При добавлении пациента произошла ошибка связывания модели" });
                     }
 
                     patient.PensionNumber = Regex.Replace(patient.PensionNumber, "[^0-9]", "");
@@ -45,13 +45,13 @@ namespace ConsultationsProject.Controllers
                     {
                         db.Patients.Add(patient);
                         db.SaveChanges();
-                        logger.LogInformation("Добавлен новый пациент в базу данных. СНИЛС: {0}.", patient.PensionNumber);
+                        logger.LogInformation($"Добавлен новый пациент в базу данных. СНИЛС: {patient.PensionNumber}.");
                         return RedirectToAction("Index", "Home");
                     }
                     else
                     {
-                        logger.LogError("При добавлении нового пациента " +
-                            "обнаружен пациент с идентичным СНИЛС = {0}." ,patient.PensionNumber);
+                        logger.LogError($"При добавлении нового пациента " +
+                            $"обнаружен пациент с идентичным СНИЛС = {patient.PensionNumber}.");
                         ModelState.AddModelError("PensionNumber", "Пациент с таким СНИЛС уже существует");
                     }
                 }
@@ -68,15 +68,16 @@ namespace ConsultationsProject.Controllers
                     .FirstOrDefault();
                 if (patient != null)
                 {
-                    logger.LogInformation("Запрос {0} вернул пациента с id {1}", HttpContext.Request.Query, id);
+                    logger.LogInformation($"Запрос {HttpContext.Request.Query} вернул пациента с id {id}");
                     return View(patient);
                 }
                 else
                 {
-                    logger.LogError("При получении страницы пациента произошла ошибка:" +
-                        " не найден пациент с id = {1}. Запрос: {0}.", HttpContext.Request.Query, id);
+                    logger.LogError($"При получении страницы пациента произошла ошибка:" +
+                        $" не найден пациент с id = {id}. Запрос: {HttpContext.Request.Query}.");
                     return View("Error",
-                        new ErrorViewModel { Message = $"Пациент с id = {id} не найден в базе данных." });
+                        new ErrorViewModel { Message = $"При получении страницы пациента произошла ошибка:" +
+                        $" не найден пациент с id = {id}"});
                 }
             }
         }
@@ -96,8 +97,7 @@ namespace ConsultationsProject.Controllers
                     patients = patients.Where(x => EF.Functions.Like(x.PensionNumber, pension + "%"));
                 }
                 var result = patients.ToList();
-                logger.LogInformation("Поисковой запрос {0} вернул {1} кол-во пациентов.",
-                    HttpContext.Request.Query, result.Count);
+                logger.LogInformation($"Поисковой запрос {HttpContext.Request.Query} вернул {result.Count} кол-во пациентов.");
                 return PartialView(result);
             }
         }
@@ -109,11 +109,12 @@ namespace ConsultationsProject.Controllers
                 var patient = db.Patients.Find(id);
                 if (patient != null)
                 {
-                    logger.LogInformation("Пациент с id = {0} был изменен.", id);
+                    logger.LogInformation($"Пациент с id = {id} был изменен.");
                     return View(patient);
                 }
+                logger.LogError($"При попытке изменения пациент с id = {id} был не найден в базе данных");
                 return View("Error",
-                    new ErrorViewModel { Message = $"Пациент с id = {id} не найден в базе данных." });
+                    new ErrorViewModel { Message = $"При попытке изменения пациент с id = {id} был не найден в базе данных" });
             }
         }
 
@@ -124,9 +125,9 @@ namespace ConsultationsProject.Controllers
             {
                 if (patient == null)
                 {
-                    logger.LogError("Произошла ошибка связывания модели при изменении пациента с id = {0}", id);
+                    logger.LogError($"При изменении пациента с id = {id} произошла ошибка связывания модели");
                     return View("Error",
-                        new ErrorViewModel { Message = $"Произошла ошибка связывания модели при изменении пациента с id = {id}." });
+                        new ErrorViewModel { Message = $"При изменении пациента с id = {id} произошла ошибка связывания модели"});
                 }
                 var _patient = db.Patients.Find(id);
                 if (_patient != null)
@@ -139,20 +140,20 @@ namespace ConsultationsProject.Controllers
                     {
                         db.Entry(_patient).CurrentValues.SetValues(patient);
                         db.SaveChanges();
-                        logger.LogInformation("Пациент с id = {0} был изменен", id);
+                        logger.LogInformation($"Пациент с id = {id} был изменен");
                         return RedirectToAction("Get", "Patient", new { id = patient.PatientId });
                     }
                     else
                     {
-                        logger.LogWarning("При изменении пациента с id = {0} произошла ошибка: " +
-                            "Был обнаружен пациент с таким же СНИЛС = {1}", id, patient.PensionNumber);
+                        logger.LogWarning($"При изменении пациента с id = {id} произошла ошибка: " +
+                            $"Был обнаружен пациент с таким же СНИЛС = {patient.PensionNumber}");
                         ModelState.AddModelError("PensionNumber", "Пациент с таким СНИЛС уже существует");
                         return View(patient);
                     }
                 }
-                logger.LogError("При попытке изменения пациент с id = {0} был не найден в базе данных");
+                logger.LogError($"При попытке изменения пациент с id = {id} был не найден в базе данных");
                 return View("Error",
-                    new ErrorViewModel { Message = $"Пациент с id = {patient.PatientId} не найден в базе данных." });
+                    new ErrorViewModel { Message = $"При попытке изменения пациент с id = {id} был не найден в базе данных" });
             }
         }
 
@@ -164,13 +165,13 @@ namespace ConsultationsProject.Controllers
                 var patient = db.Patients.Find(id);
                 if (patient != null)
                 {
-                    logger.LogInformation("Пациент с id = {0} был удален из базы данных", id);
+                    logger.LogInformation($"Пациент с id = {id} был удален из базы данных");
                     db.Remove(patient);
                     db.SaveChanges();
-                    return Json(new { code = "success" });
+                    return Json(new { success = "true" });
                 }
-                logger.LogError("При попытке удаления пациент с id = {0} был не найден в базе данных", id);
-                return Json(new { code = "fail", message = $"Ошибка! Пациент с id = {id} был не найден в базе данных" });
+                logger.LogError($"При попытке удаления пациент с id = {id} был не найден в базе данных");
+                return Json(new { success = "false", message = $"При попытке удаления пациент с id = {id} был не найден в базе данных" });
             }
         }
     }

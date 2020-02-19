@@ -11,10 +11,10 @@ namespace ConsultationsProject.Models
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ConsultationId { get; set; }
-        [Display(Name ="Дата")]
+        [Display(Name ="Дата*")]
         [Required(ErrorMessage ="Не указана дата консультации")]
         public DateTime Day { get; set; }
-        [Display(Name = "Время")]
+        [Display(Name = "Время*")]
         [Required(ErrorMessage = "Не указано время консультации")]
         public DateTime Time { get; set; }
         [Display(Name = "Симптомы")]

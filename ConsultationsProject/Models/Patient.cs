@@ -12,21 +12,21 @@ namespace ConsultationsProject.Models
     {
         [Key,DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int PatientId { get; set; }
-        [Display(Name="Имя")]
+        [Display(Name="Имя*")]
         [Required(ErrorMessage ="Не указано имя пациента")]
         public string FirstName { get; set; }
-        [Display(Name = "Фамилия")]
+        [Display(Name = "Фамилия*")]
         [Required(ErrorMessage = "Не указано фамилия пациента")]
         public string LastName { get; set; }
         [Display(Name = "Отчество (если присутствует)")]
         public string Patronymic { get; set; }
-        [Display(Name = "Дата рождения")]
+        [Display(Name = "Дата рождения*")]
         [Required(ErrorMessage = "Не указана дата рождения пациента")]
         public DateTime BirthDate { get; set; }
-        [Display(Name = "Пол")]
+        [Display(Name = "Пол*")]
         [Required(ErrorMessage = "Не указан пол пациента")]
         public string Gender { get; set; }
-        [Display(Name = "СНИЛС")]
+        [Display(Name = "СНИЛС*")]
         [Required(ErrorMessage = "Не указан СНИЛС пациента")]
         public string PensionNumber { get; set; }
         public List<Consultation> Consultations { get; set; }

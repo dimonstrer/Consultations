@@ -23,16 +23,17 @@ namespace ConsultationsProject.Controllers
             {
                 var patient = db.Patients
                     .FromSqlRaw($"SELECT * FROM PATIENTS WHERE PatientId = {patientId}");
-                if (patient.Count() == 1)
+                if (patient.Count() != 0)
                 {
-                    logger.LogInformation("Добавление консультации для пациента с id = {0}.", patientId);
+                    logger.LogInformation($"Добавление консультации для пациента с id = {patientId}.");
                     ViewBag.PatientId = patientId;
                     return View();
                 }
-                logger.LogError("При добавлении консультации произошла ошибка: " +
-                    "Пациент с id = {0} не найден в базе данных", patientId);
+                logger.LogError($"При добавлении консультации произошла ошибка: " +
+                    $"Пациент с id = {patientId} не найден в базе данных");
                 return View("Error",
-                    new ErrorViewModel { Message = $"Пациент с id = {patientId} не найден в базе данных." });
+                    new ErrorViewModel { Message = $"При добавлении консультации произошла ошибка: " +
+                    $"Пациент с id = {patientId} не найден в базе данных." });
             }
         }
         [HttpPost]
@@ -42,25 +43,27 @@ namespace ConsultationsProject.Controllers
             {
                 if (consultation == null)
                 {
-                    logger.LogError("При добавлении консультации пациенту с id {0} произошла ошибка связывания модели.", patientId);
+                    logger.LogError($"При добавлении консультации пациенту с id {patientId} произошла ошибка связывания модели.");
                     return View("Error",
-                        new ErrorViewModel { Message = "Произошла ошибка связывания модели при добавлении новой консультации." });
+                        new ErrorViewModel { Message = $"При добавлении консультации пациенту с id {patientId}" +
+                        $" произошла ошибка связывания модели." });
                 }
                 var patient = db.Patients.
                     FromSqlRaw($"SELECT * FROM PATIENTS WHERE PatientId = { consultation.PatientId}");
-                if (patient.Count() == 1)
+                if (patient.Count() != 0)
                 {
                     db.Consultations.Add(consultation);
                     db.SaveChanges();
-                    logger.LogInformation("Пациенту с id = {0} была добавлена новая консультация.", patientId);
+                    logger.LogInformation($"Пациенту с id = {patientId} была добавлена новая консультация.");
                     return RedirectToAction("Get", "Patient", new { id = consultation.PatientId });
                 }
                 else
                 {
-                    logger.LogError("При добавлении консультации произошла ошибка: " +
-                       "Пациент с id = {0} не найден в базе данных", patientId);
+                    logger.LogError($"При добавлении консультации произошла ошибка: " +
+                       $"Пациент с id = {patientId} не найден в базе данных");
                     return View("Error",
-                        new ErrorViewModel { Message = $"Пациент с id = {consultation.PatientId} не найден в базе данных." });
+                        new ErrorViewModel { Message = $"При добавлении консультации произошла ошибка: " +
+                       $"Пациент с id = {patientId} не найден в базе данных"});
                 }
             }
         }
@@ -71,14 +74,15 @@ namespace ConsultationsProject.Controllers
             using (PatientsContext db = new PatientsContext())
             {
                 var consultation = db.Consultations.FromSqlRaw($"SELECT * FROM CONSULTATIONS WHERE ConsultationId = {id}");
-                if (consultation.Count() == 1)
+                if (consultation.Count() != 0)
                 {
                     return View(consultation.FirstOrDefault());
                 }
-                logger.LogError("При изменении консультации произошла ошибка: " +
-                    "Консультация с id = {0} не найдена в базе данных", id);
+                logger.LogError($"При изменении консультации произошла ошибка: " +
+                    $"Консультация с id = {id} не найдена в базе данных");
                 return View("Error",
-                        new ErrorViewModel { Message = $"Консультация с id = {id} не найдена в базе данных." });
+                        new ErrorViewModel { Message = $"При изменении консультации произошла ошибка: " +
+                    $"Консультация с id = {id} не найдена в базе данных"});
             }
         }
 
@@ -89,25 +93,26 @@ namespace ConsultationsProject.Controllers
             {
                 if (consultation == null)
                 {
-                    logger.LogError("При изменении консультации с id {0} произошла ошибка связывания модели.", id);
+                    logger.LogError($"При изменении консультации с id {id} произошла ошибка связывания модели.");
                     return View("Error",
-                        new ErrorViewModel { Message = $"Произошла ошибка связывания модели при изменении консультации с id = {id}." });
+                        new ErrorViewModel { Message = $"При изменении консультации с id {id} произошла ошибка связывания модели." });
                 }
                 var consultationId = consultation.ConsultationId;
                 var _consultation = db.Consultations.FromSqlRaw
                     ($"SELECT * FROM CONSULTATIONS WHERE ConsultationId = {id}");
-                if (_consultation.Count() == 1)
+                if (_consultation.Count() != 0)
                 {
                     db.Entry(_consultation.FirstOrDefault()).CurrentValues.SetValues(consultation);
                     db.SaveChanges();
-                    logger.LogInformation("У пациента с id = {0} была изменена консультация с id = {1}",
-                        consultation.PatientId, id);
+                    logger.LogInformation($"У пациента с id = {consultation.PatientId}" +
+                        $" была изменена консультация с id = {id}");
                     return RedirectToAction("Get", "Patient", new { id = consultation.PatientId });
                 }
-                logger.LogError("При изменении консультации произошла ошибка: " +
-                    "Консультация с id = {0} не найдена в базе данных", id);
+                logger.LogError($"При изменении консультации произошла ошибка: " +
+                    $"Консультация с id = {id} не найдена в базе данных");
                 return View("Error",
-                        new ErrorViewModel { Message = $"Консультация с id = {consultationId} не найдена в базе данных." });
+                        new ErrorViewModel { Message = $"При изменении консультации произошла ошибка: " +
+                    $"Консультация с id = {id} не найдена в базе данных"});
             }
         }
 
@@ -119,18 +124,18 @@ namespace ConsultationsProject.Controllers
             {
                 var consultation = db.Consultations.FromSqlRaw
                     ($"SELECT * FROM CONSULTATIONS WHERE ConsultationId = {id}");
-                if (consultation.Count() == 1)
+                if (consultation.Count() != 0)
                 {
                     var patientId = consultation.FirstOrDefault().PatientId;
                     db.Consultations.Remove(consultation.FirstOrDefault());
                     db.SaveChanges();
-                    logger.LogInformation("У пациента с id = {0} была удалена консультация с id = {1}",
-                        patientId, id);
-                    return Json(new { code = "success" });
+                    logger.LogInformation($"У пациента с id = {patientId} была удалена консультация с id = {id}");
+                    return Json(new { success = "true" });
                 }
-                logger.LogError("При удалении консультации произошла ошибка: " +
-                    "Консультация с id = {0} не найдена в базе данных", id);
-                return Json(new { code = "fail", message = $"Ошибка! Консультация с id = {id} была не найдена в базе данных" });
+                logger.LogError($"При удалении консультации произошла ошибка: " +
+                    $"Консультация с id = {id} не найдена в базе данных");
+                return Json(new { code = "false", message = $"При удалении консультации произошла ошибка: " +
+                    $"Консультация с id = {id} не найдена в базе данных"});
             }
         }
     }

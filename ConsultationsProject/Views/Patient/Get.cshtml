@@ -22,7 +22,7 @@
 </div>
 
 <div>
-    <input type="button" class="btn btn-success mb-3" value="Добавить" onclick="addConsHandler()" />
+    <input type="button" class="btn btn-success mb-3" value="Добавить консультацию" onclick="addConsHandler()" />
     <table class="table">
         <caption>Консультации пациента</caption>
         <thead class="thead-light">
@@ -78,7 +78,7 @@
                 });
                 if (response.ok) {
                     let ans = await response.json();
-                    if (ans.code == 'success')
+                    if (ans.status == 'true')
                         location.reload(true);
                     else
                         alert(ans.message);
@@ -99,7 +99,7 @@
                 });
                 if (response.ok) {
                     let ans = await response.json();
-                    if (ans.code == 'success')
+                    if (ans.status == 'true')
                         location.reload(true);
                     else
                         alert(ans.message);

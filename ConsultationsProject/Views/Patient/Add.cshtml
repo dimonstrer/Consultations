@@ -6,6 +6,7 @@
 
 <h1>Новый пациент</h1>
 
+<p>Звездочкой отмечены поля, обязательные для заполнения</p>
 <form asp-controller="Patient" asp-action="Add" method="post">
     <div class="form-group">
         <label asp-for="FirstName"></label>
@@ -49,7 +50,7 @@
     @*JQ validation*@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
 
-    @* Input masks for PensionNumber *@
+    @* Input mask for PensionNumber  *@
     <script src="~/js/jquery.inputmask.js"></script>
     <script>
         $(document).ready(function () {
