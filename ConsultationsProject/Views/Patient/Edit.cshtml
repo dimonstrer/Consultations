@@ -1,11 +1,12 @@
 ﻿@model Patient
 @{
-    ViewData["Title"] = "Изменение пациента";
+    ViewData["Title"] = "Редактирование пациента";
 }
 
-<h1>Изменение пациента</h1>
+<h1>Редактирование пациента</h1>
 
-<form asp-controller="Patient" asp-action="Add" method="post">
+<form asp-controller="Patient" asp-action="Edit" method="post">
+    <input asp-for="PatientId" hidden="hidden" />
     <div class="form-group">
         <label asp-for="FirstName"></label>
         <input type="text" asp-for="FirstName" class="form-control" />
@@ -40,7 +41,7 @@
         <input type="text" asp-for="PensionNumber" class="form-control pension-number" />
         <span asp-validation-for="PensionNumber"></span>
     </div>
-    <input type="submit" value="Изменить" class="btn btn-success" />
+    <input type="submit" value="Редактировать" class="btn btn-success" />
 </form>
 
 @section scripts{

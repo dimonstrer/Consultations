@@ -25,8 +25,9 @@ namespace ConsultationsProject.Controllers
                 using (PatientsContext db = new PatientsContext())
                 {
                     patient.PensionNumber = Regex.Replace(patient.PensionNumber, "[^0-9]", "");
-                    var result = db.Patients.FromSqlInterpolated
-                        ($"SELECT TOP 1 * FROM PATIENTS WHERE PensionNumber = {patient.PensionNumber}").FirstOrDefault();
+                    var result = db.Patients
+                        .Where(x => x.PensionNumber == patient.PensionNumber)
+                        .FirstOrDefault();
                     if (result == null)
                     {
                         db.Patients.Add(patient);
@@ -96,9 +97,21 @@ namespace ConsultationsProject.Controllers
                 var _patient = db.Patients.Find(patient.PatientId);
                 if (_patient != null)
                 {
-                    db.Patients.Update(patient);
-                    db.SaveChanges();
-                    return RedirectToAction("Get", "Patient", new { id = patient.PatientId });
+                    patient.PensionNumber = Regex.Replace(patient.PensionNumber, "[^0-9]", "");
+                    var pensionCheck = db.Patients
+                        .Where(x=>x.PensionNumber==patient.PensionNumber)
+                        .FirstOrDefault();
+                    if (pensionCheck == null)
+                    {
+                        db.Entry(_patient).CurrentValues.SetValues(patient);
+                        db.SaveChanges();
+                        return RedirectToAction("Get", "Patient", new { id = patient.PatientId });
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("PensionNumber", "Пациент с таким СНИЛС уже существует");
+                        return View(patient);
+                    }
                 }
                 return NotFound();
             }

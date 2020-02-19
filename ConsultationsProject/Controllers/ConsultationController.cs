@@ -11,16 +11,15 @@ namespace ConsultationsProject.Controllers
     public class ConsultationController : Controller
     {
         [HttpGet]
-        public IActionResult Add(int id)
+        public IActionResult Add(int patientId)
         {
             using (PatientsContext db = new PatientsContext())
             {
                 var patient = db.Patients
-                    .FromSqlRaw($"SELECT * FROM PATIENTS WHERE PatientId = {id}")
-                    .FirstOrDefault();
-                if (patient != null)
+                    .FromSqlRaw($"SELECT * FROM PATIENTS WHERE PatientId = {patientId}");
+                if (patient.Count()==1)
                 {
-                    ViewBag.PatientId = id;
+                    ViewBag.PatientId = patientId;
                     return View();
                 }
                 else
@@ -33,9 +32,8 @@ namespace ConsultationsProject.Controllers
             using (PatientsContext db = new PatientsContext())
             {
                 var patient = db.Patients.
-                    FromSqlRaw($"SELECT * FROM PATIENTS WHERE PatientId = { consultation.PatientId}")
-                    .FirstOrDefault();
-                if (patient != null)
+                    FromSqlRaw($"SELECT * FROM PATIENTS WHERE PatientId = { consultation.PatientId}");
+                if (patient.Count()==1)
                 {
                     db.Consultations.Add(consultation);
                     db.SaveChanges();
@@ -51,14 +49,10 @@ namespace ConsultationsProject.Controllers
         {
             using (PatientsContext db = new PatientsContext())
             {
-                var consultation = db.Consultations.Find(id);
-                if (consultation != null)
+                var consultation = db.Consultations.FromSqlRaw($"SELECT * FROM CONSULTATIONS WHERE ConsultationId = {id}");
+                if (consultation.Count()==1)
                 {
-                    var patient = db.Patients.Find(consultation.PatientId);
-                    if (patient != null)
-                    {
-                        return View(consultation);
-                    }
+                    return View(consultation.FirstOrDefault());
                 }
                 return NotFound();
             }
@@ -69,35 +63,32 @@ namespace ConsultationsProject.Controllers
         {
             using (PatientsContext db = new PatientsContext())
             {
-                var patient = db.Patients.Find(consultation.PatientId);
-                if (patient != null)
+                var _consultation = db.Consultations.FromSqlRaw
+                    ($"SELECT * FROM CONSULTATIONS WHERE ConsultationId = {consultation.ConsultationId}");
+                if (_consultation.Count()==1)
                 {
-                    try
-                    {
-                        db.Consultations.Update(consultation);
-                        db.SaveChanges();
-                        return RedirectToAction("Get", "Patient", new { id = consultation.PatientId });
-                    }
-                    catch
-                    {
-                        return NotFound();
-                    }
+                    db.Entry(_consultation.FirstOrDefault()).CurrentValues.SetValues(consultation);
+                    db.SaveChanges();
+                    return RedirectToAction("Get", "Patient", new { id = consultation.PatientId });
                 }
-                return NotFound();
             }
+            return NotFound();
         }
+
 
         [HttpDelete]
         public IActionResult Delete(int id)
         {
-            using(PatientsContext db = new PatientsContext())
+            using (PatientsContext db = new PatientsContext())
             {
-                var consultation = db.Consultations.Find(id);
-                if (consultation != null)
+                var consultation = db.Consultations.FromSqlRaw
+                    ($"SELECT * FROM CONSULTATIONS WHERE ConsultationId = {id}");
+                if (consultation.Count()==1)
                 {
-                    db.Consultations.Remove(consultation);
+                    var patientId = consultation.FirstOrDefault().PatientId;
+                    db.Consultations.Remove(consultation.FirstOrDefault());
                     db.SaveChanges();
-                    return RedirectToAction("Get", "Patient", new { id = consultation.PatientId });
+                    return RedirectToAction("Get", "Patient", new { id = patientId });
                 }
                 return NotFound();
             }
