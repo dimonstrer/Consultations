@@ -77,7 +77,11 @@
                     method: 'DELETE'
                 });
                 if (response.ok) {
-                    location.reload(true);
+                    let ans = await response.json();
+                    if (ans.code == 'success')
+                        location.reload(true);
+                    else
+                        alert(ans.message);
                 }
                 else {
                     alert(response.status)
@@ -94,7 +98,11 @@
                     method: 'DELETE'
                 });
                 if (response.ok) {
-                    location.href = '@Url.Action("Index","Home")';
+                    let ans = await response.json();
+                    if (ans.code == 'success')
+                        location.reload(true);
+                    else
+                        alert(ans.message);
                 }
                 else {
                     alert(response.status)
