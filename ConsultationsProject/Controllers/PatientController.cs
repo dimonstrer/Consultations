@@ -37,6 +37,16 @@ namespace ConsultationsProject.Controllers
                             new ErrorViewModel { Message = "При добавлении пациента произошла ошибка связывания модели" });
                     }
 
+                    if(patient.BirthDate<DateTime.Parse("01/01/1880")||
+                        patient.BirthDate > DateTime.Now.AddYears(1))
+                    {
+                        logger.LogError($"При добавлении нового пациента произошла ошибка: " +
+                            $"Недопустимая дата: {patient.BirthDate}");
+                        ModelState.AddModelError("BirthDate", $"Дата рождения должна быть в промежутке" +
+                            $" от {DateTime.Parse("01/01/1880").ToString("d")} до {DateTime.Now.AddYears(1).ToString("d")}");
+                        return View(patient);
+                    }
+
                     patient.PensionNumber = Regex.Replace(patient.PensionNumber, "[^0-9]", "");
                     var result = db.Patients
                         .Where(x => x.PensionNumber == patient.PensionNumber)
@@ -132,6 +142,16 @@ namespace ConsultationsProject.Controllers
                 var _patient = db.Patients.Find(id);
                 if (_patient != null)
                 {
+                    if (patient.BirthDate < DateTime.Parse("01/01/1880") ||
+                        patient.BirthDate > DateTime.Now.AddYears(1))
+                    {
+                        logger.LogError($"При изменения пациента с id = {id} произошла ошибка: " +
+                            $"Недопустимая дата: {patient.BirthDate}");
+                        ModelState.AddModelError("BirthDate", $"Дата рождения должна быть в промежутке" +
+                            $" от {DateTime.Parse("01/01/1880").ToString("d")} до {DateTime.Now.AddYears(1).ToString("d")}");
+                        return View(patient);
+                    }
+
                     patient.PensionNumber = Regex.Replace(patient.PensionNumber, "[^0-9]", "");
                     var pensionCheck = db.Patients
                         .Where(x => x.PensionNumber == patient.PensionNumber)

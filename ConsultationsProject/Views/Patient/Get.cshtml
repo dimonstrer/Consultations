@@ -78,7 +78,7 @@
                 });
                 if (response.ok) {
                     let ans = await response.json();
-                    if (ans.status == 'true')
+                    if (ans.success == 'true')
                         location.reload(true);
                     else
                         alert(ans.message);
@@ -99,7 +99,7 @@
                 });
                 if (response.ok) {
                     let ans = await response.json();
-                    if (ans.status == 'true')
+                    if (ans.success == 'true')
                         location.reload(true);
                     else
                         alert(ans.message);

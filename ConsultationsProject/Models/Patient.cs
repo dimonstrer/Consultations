@@ -16,7 +16,7 @@ namespace ConsultationsProject.Models
         [Required(ErrorMessage ="Не указано имя пациента")]
         public string FirstName { get; set; }
         [Display(Name = "Фамилия*")]
-        [Required(ErrorMessage = "Не указано фамилия пациента")]
+        [Required(ErrorMessage = "Не указана фамилия пациента")]
         public string LastName { get; set; }
         [Display(Name = "Отчество (если присутствует)")]
         public string Patronymic { get; set; }
