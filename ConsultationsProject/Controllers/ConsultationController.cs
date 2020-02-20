@@ -66,7 +66,8 @@ namespace ConsultationsProject.Controllers
                     db.Consultations.Add(consultation);
                     db.SaveChanges();
                     logger.LogInformation($"Пациенту с id = {consultation.PatientId} была добавлена новая консультация.");
-                    return RedirectToAction("Get", "Patient", new { id = consultation.PatientId });
+                    return RedirectToAction("Get", "Patient", 
+                        new { id = consultation.PatientId, message = "Консультация успешно добавлена" });
                 }
                 else
                 {
@@ -127,7 +128,8 @@ namespace ConsultationsProject.Controllers
                     db.SaveChanges();
                     logger.LogInformation($"У пациента с id = {consultation.PatientId}" +
                         $" была изменена консультация с id = {id}");
-                    return RedirectToAction("Get", "Patient", new { id = consultation.PatientId });
+                    return RedirectToAction("Get", "Patient", 
+                        new { id = consultation.PatientId, message = "Консультация успешно изменена" });
                 }
                 logger.LogError($"При изменении консультации произошла ошибка: " +
                     $"Консультация с id = {id} не найдена в базе данных");
@@ -151,7 +153,7 @@ namespace ConsultationsProject.Controllers
                     db.Consultations.Remove(consultation.FirstOrDefault());
                     db.SaveChanges();
                     logger.LogInformation($"У пациента с id = {patientId} была удалена консультация с id = {id}");
-                    return Json(new { success = "true" });
+                    return Json(new { success = "true", message = "Консультация успешно удалена" });
                 }
                 logger.LogError($"При удалении консультации произошла ошибка: " +
                     $"Консультация с id = {id} не найдена в базе данных");

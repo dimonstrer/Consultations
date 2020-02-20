@@ -56,7 +56,7 @@ namespace ConsultationsProject.Controllers
                         db.Patients.Add(patient);
                         db.SaveChanges();
                         logger.LogInformation($"Добавлен новый пациент в базу данных. СНИЛС: {patient.PensionNumber}.");
-                        return RedirectToAction("Index", "Home");
+                        return RedirectToAction("Index", "Home", new { message = "Пациент успешно добавлен"});
                     }
                     else
                     {
@@ -68,8 +68,9 @@ namespace ConsultationsProject.Controllers
             }
             return View(patient);
         }
-        public IActionResult Get(int id)
+        public IActionResult Get(int id, string message="")
         {
+            ViewBag.Message = message;
             using (PatientsContext db = new PatientsContext())
             {
                 var patient = db.Patients
@@ -161,7 +162,8 @@ namespace ConsultationsProject.Controllers
                         db.Entry(_patient).CurrentValues.SetValues(patient);
                         db.SaveChanges();
                         logger.LogInformation($"Пациент с id = {id} был изменен");
-                        return RedirectToAction("Get", "Patient", new { id = patient.PatientId });
+                        return RedirectToAction("Get", "Patient",
+                            new { id = patient.PatientId, message = "Пациент успешно изменен"});
                     }
                     else
                     {
@@ -188,7 +190,7 @@ namespace ConsultationsProject.Controllers
                     logger.LogInformation($"Пациент с id = {id} был удален из базы данных");
                     db.Remove(patient);
                     db.SaveChanges();
-                    return Json(new { success = "true" });
+                    return Json(new { success = "true", message = "Пациент успешно удален" });
                 }
                 logger.LogError($"При попытке удаления пациент с id = {id} был не найден в базе данных");
                 return Json(new { success = "false", message = $"При попытке удаления пациент с id = {id} был не найден в базе данных" });

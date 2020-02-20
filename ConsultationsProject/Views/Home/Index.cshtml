@@ -4,6 +4,10 @@
 }
 
 <div class="text-center">
+    @if (ViewBag.Message != string.Empty)
+    {
+    <h4 class="text-success">@ViewBag.Message</h4>
+    }
     <h1 class="display-4">Список пациентов</h1>
     <input type="button" class="btn btn-success my-3" onclick="addHandler()" value="Добавить" />
     <input type="text" class="form-control" id="search" placeholder="Введите ФИО или СНИЛС" onkeydown="updateItems()" />
@@ -70,7 +74,7 @@
                 if (response.ok) {
                     let ans = await response.json();
                     if (ans.success == 'true')
-                        location.href = '@Url.Action("Index","Home")';
+                        location.href = '@Url.Action("Index","Home")' + '?message=' + ans.message;
                     else
                         alert(ans.message);
                 }

@@ -19,8 +19,9 @@ namespace ConsultationsProject.Controllers
             _logger = logger;
         }
 
-        public IActionResult Index(int page = 1)
+        public IActionResult Index(int page = 1, string message = "")
         {
+            ViewBag.Message = message;
             using (PatientsContext db = new PatientsContext())
             {
                 var result = db.Patients

@@ -3,6 +3,11 @@
     ViewData["Title"] = "Пациент";
 }
 
+@if (ViewBag.Message != string.Empty)
+{
+    <h4 class="text-success">@ViewBag.Message</h4>
+}
+
 <div>
     <input type="button" class="btn btn-success" value="Редактировать" onclick="editHandler()" />
     <input type="button" class="btn btn-danger" value="Удалить" onclick="deleteHandler(@Model.PatientId) " />
@@ -79,7 +84,8 @@
                 if (response.ok) {
                     let ans = await response.json();
                     if (ans.success == 'true')
-                        location.reload(true);
+                        location.href = '@Url.Action("Get", "Patient", 
+                                       new { id = Model.PatientId})' + '?message=' + ans.message;
                     else
                         alert(ans.message);
                 }
@@ -100,7 +106,7 @@
                 if (response.ok) {
                     let ans = await response.json();
                     if (ans.success == 'true')
-                        location.reload(true);
+                        location.href = '@Url.Action("Index","Home")' + '?message=' + ans.message;
                     else
                         alert(ans.message);
                 }
