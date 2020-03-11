@@ -16,13 +16,14 @@ namespace ConsultationsProject.Controllers
     public class PatientController : Controller
     {
         /// <summary>
-        /// Логгер
+        /// Логгер.
         /// </summary>
         private readonly ILogger logger;
 
         /// <summary>
         /// Конструктор контроллера.
         /// </summary>
+        /// <param name="logger">Логгер.</param>
         public PatientController(ILogger<PatientController> logger)
         {
             this.logger = logger;
@@ -31,6 +32,9 @@ namespace ConsultationsProject.Controllers
         /// <summary>
         /// Метод, возвращающий представление для добавления нового пациента.
         /// </summary>
+        /// <returns>
+        /// Представление для добавления нового пациента.
+        /// </returns>
         [HttpGet]
         public IActionResult Add()
         {
@@ -40,6 +44,12 @@ namespace ConsultationsProject.Controllers
         /// <summary>
         /// Метод, ответственный за добавление нового пациента в БД.
         /// </summary>
+        /// <param name="patient">Данные пациента.</param>
+        /// <returns>
+        /// Страницу с ошибкой, если не было данных о пациенте в запросе.
+        /// Представление со страницей добавления пациента с введенными ранее данными, если дата рождения не пройдет валидацию.
+        /// Представление главной страницы с сообщением об успешном добавлении пациента.
+        /// </returns>
         [HttpPost]
         public IActionResult Add(Patient patient)
         {
@@ -89,6 +99,12 @@ namespace ConsultationsProject.Controllers
         /// <summary>
         /// Метод, возвращающий представление с информацией о пациенте.
         /// </summary>
+        /// <param name="id">Уникальный id пациента.</param>
+        /// <param name="message">Сообщение об успешном добавлении/редактировании/удалении консультации пациента.</param>
+        /// <returns>
+        /// Страницу с ошибкой, если пациент не найден в БД.
+        /// Представление с информацией о пациенте.
+        /// </returns>
         public IActionResult Get(int id, string message="")
         {
             ViewBag.Message = message;
@@ -117,6 +133,11 @@ namespace ConsultationsProject.Controllers
         /// <summary>
         /// Метод, использующийся для поиска пациентов в БД по имени или СНИЛС.
         /// </summary>
+        /// <param name="name">ФИО пациента.</param>
+        /// <param name="pension">СНИЛС пациента.</param>
+        /// <returns>
+        /// Частичное представление со списком пациентов, которые удовлетворяют заданным поисковым критериям.
+        /// </returns>
         public IActionResult List(string name, string pension)
         {
             using (PatientsContext db = new PatientsContext())
@@ -140,6 +161,10 @@ namespace ConsultationsProject.Controllers
         /// <summary>
         /// Метод, возвращающий представление с данными пациента для редактирования.
         /// </summary>
+        /// <param name="id">Уникальный id пациента.</param>
+        /// <returns>
+        /// Представление с информацией о пациенте для редактирования.
+        /// </returns>
         public IActionResult Edit(int id)
         {
             using (PatientsContext db = new PatientsContext())
@@ -159,6 +184,15 @@ namespace ConsultationsProject.Controllers
         /// <summary>
         /// Метод, ответственный за редактирование данных пациента в БД.
         /// </summary>
+        /// <param name="id">Уникальный id пациента.</param>
+        /// <param name="patient">Измененные данные пациента.</param>
+        /// <returns>
+        /// Страницу с ошибкой, если не было данных о пациенте в запросе.
+        /// Страницу с ошибкой, если пациент был удален из БД.
+        /// Представление со страницей добавления пациента с введенными ранее данными, если дата рождения не пройдет валидацию.
+        /// Представление со страницей добавления пациента с введенными ранее данными, если СНИЛС не является уникальным.
+        /// Представление с информацией о пациенте с сообщением об успешном изменении.
+        /// </returns>
         [HttpPost]
         public IActionResult Edit(int id, Patient patient)
         {
@@ -212,6 +246,11 @@ namespace ConsultationsProject.Controllers
         /// <summary>
         /// Метод, ответственный за удаление пациента из БД.
         /// </summary>
+        /// <param name="id">Уникальный id пациента.</param>
+        /// <returns>
+        /// JSON со статусом false и сообщением об ошибке, если пациент не найден в БД.
+        /// JSON со статусом true и сообщением об успешном удалении.
+        /// </returns>
         [HttpDelete]
         public IActionResult Delete(int id)
         {

@@ -21,6 +21,7 @@ namespace ConsultationsProject.Models
         /// <summary>
         /// Метод конфигурации контекста.
         /// </summary>
+        /// <param name="optionsBuilder">Настройщик конфигурации.</param>
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=ConsultationsProjectDB;Trusted_Connection=True;");
@@ -29,6 +30,7 @@ namespace ConsultationsProject.Models
         /// <summary>
         /// Таблица пациентов.
         /// </summary>
+
         public DbSet<Patient> Patients { get; set; }
         /// <summary>
         /// Таблица консультаций пациентов.

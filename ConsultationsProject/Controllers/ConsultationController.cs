@@ -22,6 +22,7 @@ namespace ConsultationsProject.Controllers
         /// <summary>
         /// Конструктор контроллера.
         /// </summary>
+        /// <param name="logger">Логгер.</param>
         public ConsultationController(ILogger<ConsultationController> logger)
         {
             this.logger = logger;
@@ -30,6 +31,11 @@ namespace ConsultationsProject.Controllers
         /// <summary>
         /// Метод, возвращающий представление для добавления новой консультации пациенту.
         /// </summary>
+        /// <param name="patientId">Уникальный id пациента.</param>
+        /// <returns>
+        /// Страницу с ошибкой, если пациент не найден в БД.
+        /// Представление с добавлением новой консультации.
+        /// </returns>
         [HttpGet]
         public IActionResult Add(int patientId)
         {
@@ -54,6 +60,13 @@ namespace ConsultationsProject.Controllers
         /// <summary>
         /// Метод, ответственный за добавление новой консультации пациента в БД.
         /// </summary>
+        /// <param name="consultation">Данные новой консультации пациента.</param>
+        /// <returns>
+        /// Страницу с ошибкой, если не было данных о консультации пациента в запросе.
+        /// Страницу с ошибкой, если пациент не найден в БД.
+        /// Представление со страницей добавления консультации пациента с введенными ранее данными, если день консультации не пройдет валидацию.
+        /// Представление с информацией о пациенте с сообщением об успешном добавлении консультации.
+        /// </returns>
         [HttpPost]
         public IActionResult Add(Consultation consultation)
         {
@@ -101,6 +114,11 @@ namespace ConsultationsProject.Controllers
         /// <summary>
         /// Метод, возвращающий представление для редактирования данных консультации пациента.
         /// </summary>
+        /// <param name="id">Уникальный id консультации пациента.</param>
+        /// <returns>
+        /// Страницу с ошибкой, если консультация не найдена в БД.
+        /// Представление с информацией о консультации пациента для редактирования.
+        /// </returns>
         [HttpGet]
         public IActionResult Edit(int id)
         {
@@ -122,6 +140,14 @@ namespace ConsultationsProject.Controllers
         /// <summary>
         /// Метод, ответственный за редактирование данных консультации пациента в БД.
         /// </summary>
+        /// <param name="id">Уникальный id консультации пациента.</param>
+        /// <param name="consultation">Измененные данные консультации пациента.</param>
+        /// <returns>
+        /// Страницу с ошибкой, если не было данных о консультации пациента в запросе.
+        /// Страницу с ошибкой, если пациент не найден в БД.
+        /// Представление со страницей изменения консультации пациента с введенными ранее данными, если день консультации не пройдет валидацию.
+        /// Представление с информацией о пациенте с сообщением об успешном редактировании консультации.
+        /// </returns>
         [HttpPost]
         public IActionResult Edit(int id, Consultation consultation)
         {
@@ -166,6 +192,11 @@ namespace ConsultationsProject.Controllers
         /// <summary>
         /// Метод, ответственный за удаление консультации пациента из БД.
         /// </summary>
+        /// <param name="id">Уникальный id консультации пациента.</param>
+        /// <returns>
+        /// JSON со статусом false и сообщением об ошибке, если консультация не найдена в БД.
+        /// JSON со статусом true и сообщением об успешном удалении.
+        /// </returns>
         [HttpDelete]
         public IActionResult Delete(int id)
         {

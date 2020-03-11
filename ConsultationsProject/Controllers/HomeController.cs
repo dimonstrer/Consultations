@@ -27,6 +27,7 @@ namespace ConsultationsProject.Controllers
         /// <summary>
         /// Конструктор контроллера. 
         /// </summary>
+        /// <param name="logger">Объект логгера</param>
         public HomeController(ILogger<HomeController> logger)
         {
             _logger = logger;
@@ -35,6 +36,11 @@ namespace ConsultationsProject.Controllers
         /// <summary>
         /// Метод, возвращающий список пациентов.
         /// </summary>
+        /// <param name="message">Сообщение об успешном добавлении/редактировании/удалении пациента.</param>
+        /// <param name="page">Номер страницы списка пациентов.</param>
+        /// <returns>
+        /// Представление одной страницы со списком пациентов.
+        /// </returns>
         public IActionResult Index(int page = 1, string message = "")
         {
             ViewBag.Message = message;
@@ -51,6 +57,9 @@ namespace ConsultationsProject.Controllers
         /// <summary>
         /// Метод, созданный по умолчанию.
         /// </summary>
+        /// <returns>
+        /// Представление с информацией о приватности.
+        /// </returns>
         public IActionResult Privacy()
         {
             return View();
