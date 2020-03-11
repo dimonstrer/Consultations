@@ -9,13 +9,27 @@ using Microsoft.Extensions.Logging;
 
 namespace ConsultationsProject.Controllers
 {
+    /// <summary>
+    /// Контроллер, ответственный за обработку запросов с консультациями пациентов.
+    /// </summary>
     public class ConsultationController : Controller
     {
+        /// <summary>
+        /// Логгер
+        /// </summary>
         private readonly ILogger logger;
+
+        /// <summary>
+        /// Конструктор контроллера.
+        /// </summary>
         public ConsultationController(ILogger<ConsultationController> logger)
         {
             this.logger = logger;
         }
+
+        /// <summary>
+        /// Метод, возвращающий представление для добавления новой консультации пациенту.
+        /// </summary>
         [HttpGet]
         public IActionResult Add(int patientId)
         {
@@ -36,6 +50,10 @@ namespace ConsultationsProject.Controllers
                     $"Пациент с id = {patientId} не найден в базе данных." });
             }
         }
+
+        /// <summary>
+        /// Метод, ответственный за добавление новой консультации пациента в БД.
+        /// </summary>
         [HttpPost]
         public IActionResult Add(Consultation consultation)
         {
@@ -80,6 +98,9 @@ namespace ConsultationsProject.Controllers
             }
         }
 
+        /// <summary>
+        /// Метод, возвращающий представление для редактирования данных консультации пациента.
+        /// </summary>
         [HttpGet]
         public IActionResult Edit(int id)
         {
@@ -98,6 +119,9 @@ namespace ConsultationsProject.Controllers
             }
         }
 
+        /// <summary>
+        /// Метод, ответственный за редактирование данных консультации пациента в БД.
+        /// </summary>
         [HttpPost]
         public IActionResult Edit(int id, Consultation consultation)
         {
@@ -139,7 +163,9 @@ namespace ConsultationsProject.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Метод, ответственный за удаление консультации пациента из БД.
+        /// </summary>
         [HttpDelete]
         public IActionResult Delete(int id)
         {

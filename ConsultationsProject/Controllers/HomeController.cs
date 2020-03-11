@@ -9,16 +9,32 @@ using ConsultationsProject.Models;
 
 namespace ConsultationsProject.Controllers
 {
+    /// <summary>
+    /// Контроллер, ответственный за обработку запросов главной страницы сайта (списка пациентов).
+    /// </summary>
     public class HomeController : Controller
     {
+        /// <summary>
+        /// Количество пациентов на страницу (задел для пагинации)
+        /// </summary>
         private int PageSize = 10;
+
+        /// <summary>
+        /// Логгер
+        /// </summary>
         private readonly ILogger<HomeController> _logger;
 
+        /// <summary>
+        /// Конструктор контроллера. 
+        /// </summary>
         public HomeController(ILogger<HomeController> logger)
         {
             _logger = logger;
         }
 
+        /// <summary>
+        /// Метод, возвращающий список пациентов.
+        /// </summary>
         public IActionResult Index(int page = 1, string message = "")
         {
             ViewBag.Message = message;
@@ -32,6 +48,9 @@ namespace ConsultationsProject.Controllers
             }
         }
 
+        /// <summary>
+        /// Метод, созданный по умолчанию.
+        /// </summary>
         public IActionResult Privacy()
         {
             return View();

@@ -10,19 +10,36 @@ using Microsoft.Extensions.Logging;
 
 namespace ConsultationsProject.Controllers
 {
+    /// <summary>
+    /// Контроллер, ответственный за обработку запросов с пациентами.
+    /// </summary>
     public class PatientController : Controller
     {
+        /// <summary>
+        /// Логгер
+        /// </summary>
         private readonly ILogger logger;
+
+        /// <summary>
+        /// Конструктор контроллера.
+        /// </summary>
         public PatientController(ILogger<PatientController> logger)
         {
             this.logger = logger;
         }
+
+        /// <summary>
+        /// Метод, возвращающий представление для добавления нового пациента.
+        /// </summary>
         [HttpGet]
         public IActionResult Add()
         {
             return View();
         }
 
+        /// <summary>
+        /// Метод, ответственный за добавление нового пациента в БД.
+        /// </summary>
         [HttpPost]
         public IActionResult Add(Patient patient)
         {
@@ -68,6 +85,10 @@ namespace ConsultationsProject.Controllers
             }
             return View(patient);
         }
+
+        /// <summary>
+        /// Метод, возвращающий представление с информацией о пациенте.
+        /// </summary>
         public IActionResult Get(int id, string message="")
         {
             ViewBag.Message = message;
@@ -93,6 +114,9 @@ namespace ConsultationsProject.Controllers
             }
         }
 
+        /// <summary>
+        /// Метод, использующийся для поиска пациентов в БД по имени или СНИЛС.
+        /// </summary>
         public IActionResult List(string name, string pension)
         {
             using (PatientsContext db = new PatientsContext())
@@ -113,6 +137,9 @@ namespace ConsultationsProject.Controllers
             }
         }
 
+        /// <summary>
+        /// Метод, возвращающий представление с данными пациента для редактирования.
+        /// </summary>
         public IActionResult Edit(int id)
         {
             using (PatientsContext db = new PatientsContext())
@@ -129,6 +156,9 @@ namespace ConsultationsProject.Controllers
             }
         }
 
+        /// <summary>
+        /// Метод, ответственный за редактирование данных пациента в БД.
+        /// </summary>
         [HttpPost]
         public IActionResult Edit(int id, Patient patient)
         {
@@ -179,6 +209,9 @@ namespace ConsultationsProject.Controllers
             }
         }
 
+        /// <summary>
+        /// Метод, ответственный за удаление пациента из БД.
+        /// </summary>
         [HttpDelete]
         public IActionResult Delete(int id)
         {
