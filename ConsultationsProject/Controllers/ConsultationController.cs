@@ -37,8 +37,8 @@ namespace ConsultationsProject.Controllers
         /// Страницу с ошибкой, если пациент не найден в БД.
         /// Представление с добавлением новой консультации.
         /// </returns>
-        [HttpGet("patient/{patientId}/consultations")]
-        public IActionResult Add(int patientId)
+        [HttpGet("patient/{patient-id}/consultations")]
+        public IActionResult Add([FromRoute(Name = "patient-id")]int patientId)
         {
             using (PatientsContext db = new PatientsContext())
             {
