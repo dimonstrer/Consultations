@@ -13,6 +13,7 @@ namespace ConsultationsProject.Controllers
     /// <summary>
     /// Контроллер, ответственный за обработку запросов с пациентами.
     /// </summary>
+    [Route("patient-management/patients")]
     public class PatientController : Controller
     {
         /// <summary>
@@ -64,7 +65,7 @@ namespace ConsultationsProject.Controllers
                             new ErrorViewModel { Message = "При добавлении пациента произошла ошибка связывания модели" });
                     }
 
-                    if(patient.BirthDate<DateTime.Parse("01/01/1880")||
+                    if (patient.BirthDate < DateTime.Parse("01/01/1880") ||
                         patient.BirthDate > DateTime.Now.AddYears(1))
                     {
                         logger.LogError($"При добавлении нового пациента произошла ошибка: " +
@@ -83,7 +84,7 @@ namespace ConsultationsProject.Controllers
                         db.Patients.Add(patient);
                         db.SaveChanges();
                         logger.LogInformation($"Добавлен новый пациент в базу данных. СНИЛС: {patient.PensionNumber}.");
-                        return RedirectToAction("Index", "Home", new { message = "Пациент успешно добавлен"});
+                        return RedirectToAction("Index", "Home", new { message = "Пациент успешно добавлен" });
                     }
                     else
                     {
@@ -105,7 +106,8 @@ namespace ConsultationsProject.Controllers
         /// Страницу с ошибкой, если пациент не найден в БД.
         /// Представление с информацией о пациенте.
         /// </returns>
-        public IActionResult Get(int id, string message="")
+        [HttpGet("{id}")]
+        public IActionResult Get(int id, string message = "")
         {
             ViewBag.Message = message;
             using (PatientsContext db = new PatientsContext())
@@ -125,7 +127,7 @@ namespace ConsultationsProject.Controllers
                         $" не найден пациент с id = {id}. Запрос: {HttpContext.Request.Query}.");
                     return View("Error",
                         new ErrorViewModel { Message = $"При получении страницы пациента произошла ошибка:" +
-                        $" не найден пациент с id = {id}"});
+                        $" не найден пациент с id = {id}" });
                 }
             }
         }
@@ -138,6 +140,7 @@ namespace ConsultationsProject.Controllers
         /// <returns>
         /// Частичное представление со списком пациентов, которые удовлетворяют заданным поисковым критериям.
         /// </returns>
+        [HttpGet("{name}/{pension}")]
         public IActionResult List(string name, string pension)
         {
             using (PatientsContext db = new PatientsContext())
@@ -165,6 +168,9 @@ namespace ConsultationsProject.Controllers
         /// <returns>
         /// Представление с информацией о пациенте для редактирования.
         /// </returns>
+        
+        
+        [HttpGet("{id}")]
         public IActionResult Edit(int id)
         {
             using (PatientsContext db = new PatientsContext())
@@ -193,7 +199,7 @@ namespace ConsultationsProject.Controllers
         /// Представление со страницей добавления пациента с введенными ранее данными, если СНИЛС не является уникальным.
         /// Представление с информацией о пациенте с сообщением об успешном изменении.
         /// </returns>
-        [HttpPost]
+        [HttpPost("{id}")]
         public IActionResult Edit(int id, Patient patient)
         {
             using (PatientsContext db = new PatientsContext())
@@ -251,7 +257,7 @@ namespace ConsultationsProject.Controllers
         /// JSON со статусом false и сообщением об ошибке, если пациент не найден в БД.
         /// JSON со статусом true и сообщением об успешном удалении.
         /// </returns>
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
             using (PatientsContext db = new PatientsContext())

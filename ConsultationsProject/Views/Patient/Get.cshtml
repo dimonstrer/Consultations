@@ -77,7 +77,7 @@
         }
         async function deleteConsHandler(value) {
             if (confirm('Вы действительно хотите удалить консультацию?')) {
-                let url = '@Url.Action("Delete","Consultation")?id=' + value;
+                let url = '/consultation-management/consultations/' + value;
                 let response = await fetch(url, {
                     method: 'DELETE'
                 });
@@ -99,7 +99,7 @@
         }
         async function deleteHandler(value) {
             if (confirm('Вы действительно хотите удалить этого пациента?')) {
-                let url = '@Url.Action("Delete","Patient")?id=' + value;
+                let url = '/patient-management/patients/' + value;
                 let response = await fetch(url, {
                     method: 'DELETE'
                 });

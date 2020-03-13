@@ -12,6 +12,7 @@ namespace ConsultationsProject.Controllers
     /// <summary>
     /// Контроллер, ответственный за обработку запросов с консультациями пациентов.
     /// </summary>
+    [Route("consultation-management")]
     public class ConsultationController : Controller
     {
         /// <summary>
@@ -36,7 +37,7 @@ namespace ConsultationsProject.Controllers
         /// Страницу с ошибкой, если пациент не найден в БД.
         /// Представление с добавлением новой консультации.
         /// </returns>
-        [HttpGet]
+        [HttpGet("patient/{patientId}/consultations")]
         public IActionResult Add(int patientId)
         {
             using (PatientsContext db = new PatientsContext())
@@ -67,7 +68,7 @@ namespace ConsultationsProject.Controllers
         /// Представление со страницей добавления консультации пациента с введенными ранее данными, если день консультации не пройдет валидацию.
         /// Представление с информацией о пациенте с сообщением об успешном добавлении консультации.
         /// </returns>
-        [HttpPost]
+        [HttpPost("consultations")]
         public IActionResult Add(Consultation consultation)
         {
             using (PatientsContext db = new PatientsContext())
@@ -97,7 +98,7 @@ namespace ConsultationsProject.Controllers
                     db.Consultations.Add(consultation);
                     db.SaveChanges();
                     logger.LogInformation($"Пациенту с id = {consultation.PatientId} была добавлена новая консультация.");
-                    return RedirectToAction("Get", "Patient", 
+                    return RedirectToAction("Get", "Patient",
                         new { id = consultation.PatientId, message = "Консультация успешно добавлена" });
                 }
                 else
@@ -106,7 +107,7 @@ namespace ConsultationsProject.Controllers
                        $"Пациент с id = {consultation.PatientId} не найден в базе данных");
                     return View("Error",
                         new ErrorViewModel { Message = $"При добавлении консультации произошла ошибка: " +
-                       $"Пациент с id = {consultation.PatientId} не найден в базе данных"});
+                       $"Пациент с id = {consultation.PatientId} не найден в базе данных" });
                 }
             }
         }
@@ -119,7 +120,7 @@ namespace ConsultationsProject.Controllers
         /// Страницу с ошибкой, если консультация не найдена в БД.
         /// Представление с информацией о консультации пациента для редактирования.
         /// </returns>
-        [HttpGet]
+        [HttpGet("consultations/{id}")]
         public IActionResult Edit(int id)
         {
             using (PatientsContext db = new PatientsContext())
@@ -148,7 +149,7 @@ namespace ConsultationsProject.Controllers
         /// Представление со страницей изменения консультации пациента с введенными ранее данными, если день консультации не пройдет валидацию.
         /// Представление с информацией о пациенте с сообщением об успешном редактировании консультации.
         /// </returns>
-        [HttpPost]
+        [HttpPost("consultations/{id}")]
         public IActionResult Edit(int id, Consultation consultation)
         {
             using (PatientsContext db = new PatientsContext())
@@ -197,7 +198,7 @@ namespace ConsultationsProject.Controllers
         /// JSON со статусом false и сообщением об ошибке, если консультация не найдена в БД.
         /// JSON со статусом true и сообщением об успешном удалении.
         /// </returns>
-        [HttpDelete]
+        [HttpDelete("consultations/{id}")]
         public IActionResult Delete(int id)
         {
             using (PatientsContext db = new PatientsContext())

@@ -41,6 +41,7 @@ namespace ConsultationsProject.Controllers
         /// <returns>
         /// Представление одной страницы со списком пациентов.
         /// </returns>
+        [Route("patient-management/patients/{page}")]
         public IActionResult Index(int page = 1, string message = "")
         {
             ViewBag.Message = message;
