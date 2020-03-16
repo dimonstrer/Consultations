@@ -41,16 +41,20 @@ namespace ConsultationsProject.Controllers
         /// <returns>
         /// Представление одной страницы со списком пациентов.
         /// </returns>
-        [Route("patient-management/patients/{page}")]
+        [Route("{controller=Home}/{action=Index}")]
+        [Route("patient-management/patients")]
         public IActionResult Index(int page = 1, string message = "")
         {
             ViewBag.Message = message;
             using (PatientsContext db = new PatientsContext())
             {
-                var result = db.Patients
+                var count = db.Patients.Count();
+                var patients = db.Patients
                     .Skip((page - 1) * PageSize)
                     .Take(PageSize)
                     .ToList();
+                PageViewModel pageViewModel = new PageViewModel(count, page, PageSize);
+                IndexViewModel result = new IndexViewModel { PageViewModel = pageViewModel, Patients = patients };
                 return View(result);
             }
         }

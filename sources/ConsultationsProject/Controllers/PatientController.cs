@@ -51,6 +51,7 @@ namespace ConsultationsProject.Controllers
         /// Представление со страницей добавления пациента с введенными ранее данными, если дата рождения не пройдет валидацию.
         /// Представление главной страницы с сообщением об успешном добавлении пациента.
         /// </returns>
+        
         [HttpPost]
         public IActionResult Add(Patient patient)
         {
@@ -96,7 +97,7 @@ namespace ConsultationsProject.Controllers
             }
             return View(patient);
         }
-
+        
         /// <summary>
         /// Метод, возвращающий представление с информацией о пациенте.
         /// </summary>
@@ -169,7 +170,6 @@ namespace ConsultationsProject.Controllers
         /// Представление с информацией о пациенте для редактирования.
         /// </returns>
         
-        
         [HttpGet("{id}")]
         public IActionResult Edit(int id)
         {
@@ -186,7 +186,6 @@ namespace ConsultationsProject.Controllers
                     new ErrorViewModel { Message = $"При попытке изменения пациент с id = {id} был не найден в базе данных" });
             }
         }
-
         /// <summary>
         /// Метод, ответственный за редактирование данных пациента в БД.
         /// </summary>

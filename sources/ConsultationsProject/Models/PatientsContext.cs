@@ -18,6 +18,20 @@ namespace ConsultationsProject.Models
         {
         }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            var patients = new Patient[20];
+            for (var i = 0; i < 20; i++)
+                patients[i] = new Patient {
+                    PatientId = 5000 + i,
+                    FirstName = $"Patient{i}",
+                    LastName = "Patient",
+                    BirthDate = DateTime.Now,
+                    Gender = (i % 2 == 0 ? "Мужской" : "Женский"),
+                    PensionNumber = $"{i * 100000}"
+                };
+            modelBuilder.Entity<Patient>().HasData(patients);
+        }
         /// <summary>
         /// Метод конфигурации контекста.
         /// </summary>
