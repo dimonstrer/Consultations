@@ -22,7 +22,8 @@ namespace ConsultationsProject.Models
         {
             var patients = new Patient[20];
             for (var i = 0; i < 20; i++)
-                patients[i] = new Patient {
+                patients[i] = new Patient
+                {
                     PatientId = 5000 + i,
                     FirstName = $"Patient{i}",
                     LastName = "Patient",
@@ -30,7 +31,22 @@ namespace ConsultationsProject.Models
                     Gender = (i % 2 == 0 ? "Мужской" : "Женский"),
                     PensionNumber = $"{i * 100000}"
                 };
+
+            var consultations = new Consultation[12];
+            for (var i = 0; i < 12; i++)
+            {
+                consultations[i] = new Consultation
+                {
+                    PatientId = 5001,
+                    ConsultationId = 1000 + i,
+                    Day = DateTime.Now,
+                    Time = DateTime.Now,
+                    Symptoms = $"{i}"
+                };
+            }
+
             modelBuilder.Entity<Patient>().HasData(patients);
+            modelBuilder.Entity<Consultation>().HasData(consultations);
         }
         /// <summary>
         /// Метод конфигурации контекста.

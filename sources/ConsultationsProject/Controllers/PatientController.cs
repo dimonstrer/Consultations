@@ -22,6 +22,11 @@ namespace ConsultationsProject.Controllers
         private readonly ILogger logger;
 
         /// <summary>
+        /// Количество консультаций на страницу у пациента.
+        /// </summary>
+        private int PageSize = 5;
+
+        /// <summary>
         /// Конструктор контроллера.
         /// </summary>
         /// <param name="logger">Логгер.</param>
@@ -108,19 +113,24 @@ namespace ConsultationsProject.Controllers
         /// Представление с информацией о пациенте.
         /// </returns>
         [HttpGet("{id}")]
-        public IActionResult Get(int id, string message = "")
+        public IActionResult Get(int id, int page = 1, string message = "")
         {
             ViewBag.Message = message;
             using (PatientsContext db = new PatientsContext())
             {
-                var patient = db.Patients
-                    .Include(x => x.Consultations)
-                    .Where(x => x.PatientId == id)
-                    .FirstOrDefault();
+                var patient = db.Patients.Find(id);
                 if (patient != null)
                 {
                     logger.LogInformation($"Запрос {HttpContext.Request.Query} вернул пациента с id {id}");
-                    return View(patient);
+                    var count = db.Consultations.Where(x => x.PatientId == id).Count();
+                    patient.Consultations = db.Consultations
+                        .Where(x => x.PatientId == id)
+                        .Skip((page - 1) * PageSize)
+                        .Take(PageSize)
+                        .ToList();
+                    var pageViewModel = new PageViewModel(count, page, PageSize);
+                    var result = new PatientViewModel { PageViewModel = pageViewModel, Patient = patient };
+                    return View(result);
                 }
                 else
                 {

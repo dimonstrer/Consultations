@@ -1,4 +1,4 @@
-﻿@model Patient
+﻿@model PatientViewModel
 @{
     ViewData["Title"] = "Пациент";
 }
@@ -10,19 +10,19 @@
 
 <div>
     <input type="button" class="btn btn-success" value="Редактировать" onclick="editHandler()" />
-    <input type="button" class="btn btn-danger" value="Удалить" onclick="deleteHandler(@Model.PatientId) " />
+    <input type="button" class="btn btn-danger" value="Удалить" onclick="deleteHandler(@Model.Patient.PatientId) " />
 </div>
 
 <div class="text-left mt-4">
     <dl class="row">
         <dt class="col-sm-3">ФИО</dt>
-        <dd class="col-sm-9">@String.Format(Model.LastName + " " + Model.FirstName + " " + Model.Patronymic)</dd>
+        <dd class="col-sm-9">@String.Format(Model.Patient.LastName + " " + Model.Patient.FirstName + " " + Model.Patient.Patronymic)</dd>
         <dt class="col-sm-3">Пол</dt>
-        <dd class="col-sm-9">@Model.Gender</dd>
+        <dd class="col-sm-9">@Model.Patient.Gender</dd>
         <dt class="col-sm-3">Дата рождения</dt>
-        <dd class="col-sm-9">@Model.BirthDate.ToString("d MMM yyyy")</dd>
+        <dd class="col-sm-9">@Model.Patient.BirthDate.ToString("d MMM yyyy")</dd>
         <dt class="col-sm-3">СНИЛС</dt>
-        <dd class="col-sm-9">@Model.PensionNumber</dd>
+        <dd class="col-sm-9">@Model.Patient.PensionNumber</dd>
     </dl>
 </div>
 
@@ -39,9 +39,9 @@
             </tr>
         </thead>
         <tbody class="consultations">
-            @if (Model.Consultations != null && Model.Consultations.Count > 0)
+            @if (Model.Patient.Consultations != null && Model.Patient.Consultations.Count > 0)
             {
-                @foreach (Consultation cons in Model.Consultations)
+                @foreach (Consultation cons in Model.Patient.Consultations)
                 {
                     <tr>
                         <td width="15%">@cons.Day.ToString("d MM yyyy")</td>
@@ -67,13 +67,31 @@
             }
         </tbody>
     </table>
+    <div class="text-center">
+        @if (Model.PageViewModel.HasPreviousPage)
+        {
+            <a asp-action="Get"
+               asp-route-page="@(Model.PageViewModel.PageNumber - 1)"
+               class="btn btn-outline-dark">
+                Назад
+            </a>
+        }
+        @if (Model.PageViewModel.HasNextPage)
+        {
+            <a asp-action="Get"
+               asp-route-page="@(Model.PageViewModel.PageNumber + 1)"
+               class="btn btn-outline-dark">
+                Вперед
+            </a>
+        }
+    </div>
 </div>
 
 @section scripts{
     @*Button handlers*@
     <script>
         function addConsHandler() {
-            location.href = '@Url.Action("Add", "Consultation", new { patientId = Model.PatientId })'
+            location.href = '@Url.Action("Add", "Consultation", new { patientId = Model.Patient.PatientId })'
         }
         async function deleteConsHandler(value) {
             if (confirm('Вы действительно хотите удалить консультацию?')) {
@@ -84,8 +102,8 @@
                 if (response.ok) {
                     let ans = await response.json();
                     if (ans.success == 'true')
-                        location.href = '@Url.Action("Get", "Patient", 
-                                       new { id = Model.PatientId})' + '?message=' + ans.message;
+                        location.href = '@Url.Action("Get", "Patient",
+                                       new { id = Model.Patient.PatientId})' + '?message=' + ans.message;
                     else
                         alert(ans.message);
                 }
@@ -95,7 +113,7 @@
             }
         }
         function editHandler() {
-            location.href = '@Url.Action("Edit", "Patient", new { id = Model.PatientId })';
+            location.href = '@Url.Action("Edit", "Patient", new { id = Model.Patient.PatientId })';
         }
         async function deleteHandler(value) {
             if (confirm('Вы действительно хотите удалить этого пациента?')) {

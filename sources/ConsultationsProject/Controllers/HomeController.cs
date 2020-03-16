@@ -15,7 +15,7 @@ namespace ConsultationsProject.Controllers
     public class HomeController : Controller
     {
         /// <summary>
-        /// Количество пациентов на страницу (задел для пагинации)
+        /// Количество пациентов на страницу.
         /// </summary>
         private int PageSize = 10;
 
@@ -27,7 +27,7 @@ namespace ConsultationsProject.Controllers
         /// <summary>
         /// Конструктор контроллера. 
         /// </summary>
-        /// <param name="logger">Объект логгера</param>
+        /// <param name="logger">Объект логгера.</param>
         public HomeController(ILogger<HomeController> logger)
         {
             _logger = logger;
