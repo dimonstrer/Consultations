@@ -113,6 +113,7 @@ namespace ConsultationsProject.Controllers
         /// </summary>
         /// <param name="id">Уникальный id пациента.</param>
         /// <param name="message">Сообщение об успешном добавлении/редактировании/удалении консультации пациента.</param>
+        /// <param name="page">Текущая страница списка консультаций.</param>
         /// <returns>
         /// Страницу с ошибкой, если пациент не найден в БД.
         /// Представление с информацией о пациенте.
@@ -156,6 +157,7 @@ namespace ConsultationsProject.Controllers
         /// </summary>
         /// <param name="name">ФИО пациента.</param>
         /// <param name="pension">СНИЛС пациента.</param>
+        /// <param name="page">Текущая страница списка пациентов.</param>
         /// <returns>
         /// Частичное представление со списком пациентов, которые удовлетворяют заданным поисковым критериям.
         /// </returns>
