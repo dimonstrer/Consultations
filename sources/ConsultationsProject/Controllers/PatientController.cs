@@ -24,7 +24,12 @@ namespace ConsultationsProject.Controllers
         /// <summary>
         /// Количество консультаций на страницу у пациента.
         /// </summary>
-        private int PageSize = 5;
+        private int ConsultationsPageSize = 5;
+
+        /// <summary>
+        /// Количество пациентов на страницу.
+        /// </summary>
+        private int PatientsPageSize = 10;
 
         /// <summary>
         /// Конструктор контроллера.
@@ -56,7 +61,7 @@ namespace ConsultationsProject.Controllers
         /// Представление со страницей добавления пациента с введенными ранее данными, если дата рождения не пройдет валидацию.
         /// Представление главной страницы с сообщением об успешном добавлении пациента.
         /// </returns>
-        
+
         [HttpPost]
         public IActionResult Add(Patient patient)
         {
@@ -102,7 +107,7 @@ namespace ConsultationsProject.Controllers
             }
             return View(patient);
         }
-        
+
         /// <summary>
         /// Метод, возвращающий представление с информацией о пациенте.
         /// </summary>
@@ -125,10 +130,10 @@ namespace ConsultationsProject.Controllers
                     var count = db.Consultations.Where(x => x.PatientId == id).Count();
                     patient.Consultations = db.Consultations
                         .Where(x => x.PatientId == id)
-                        .Skip((page - 1) * PageSize)
-                        .Take(PageSize)
+                        .Skip((page - 1) * ConsultationsPageSize)
+                        .Take(ConsultationsPageSize)
                         .ToList();
-                    var pageViewModel = new PageViewModel(count, page, PageSize);
+                    var pageViewModel = new PageViewModel(count, page, ConsultationsPageSize);
                     var result = new PatientViewModel { PageViewModel = pageViewModel, Patient = patient };
                     return View(result);
                 }
@@ -137,8 +142,11 @@ namespace ConsultationsProject.Controllers
                     logger.LogError($"При получении страницы пациента произошла ошибка:" +
                         $" не найден пациент с id = {id}. Запрос: {HttpContext.Request.Query}.");
                     return View("Error",
-                        new ErrorViewModel { Message = $"При получении страницы пациента произошла ошибка:" +
-                        $" не найден пациент с id = {id}" });
+                        new ErrorViewModel
+                        {
+                            Message = $"При получении страницы пациента произошла ошибка:" +
+                        $" не найден пациент с id = {id}"
+                        });
                 }
             }
         }
@@ -151,8 +159,8 @@ namespace ConsultationsProject.Controllers
         /// <returns>
         /// Частичное представление со списком пациентов, которые удовлетворяют заданным поисковым критериям.
         /// </returns>
-        [HttpGet("{name}/{pension}")]
-        public IActionResult List(string name, string pension)
+        [HttpGet("search")]
+        public IActionResult List(string name, string pension, int page = 1)
         {
             using (PatientsContext db = new PatientsContext())
             {
@@ -166,8 +174,17 @@ namespace ConsultationsProject.Controllers
                 {
                     patients = patients.Where(x => EF.Functions.Like(x.PensionNumber, pension + "%"));
                 }
-                var result = patients.ToList();
-                logger.LogInformation($"Поисковой запрос {HttpContext.Request.Query} вернул {result.Count} кол-во пациентов.");
+
+                var count = patients.Count();
+                patients = patients
+                    .Skip((page - 1) * ConsultationsPageSize)
+                    .Take(ConsultationsPageSize)
+                    .ToList();
+
+                var pageViewModel = new PageViewModel(count, page, PatientsPageSize);
+                var result = new IndexViewModel { PageViewModel = pageViewModel, Patients = patients };
+
+                logger.LogInformation($"Поисковой запрос {HttpContext.Request.Query} вернул {count} кол-во пациентов.");
                 return PartialView(result);
             }
         }
@@ -179,7 +196,7 @@ namespace ConsultationsProject.Controllers
         /// <returns>
         /// Представление с информацией о пациенте для редактирования.
         /// </returns>
-        
+
         [HttpGet("{id}")]
         public IActionResult Edit(int id)
         {
@@ -217,7 +234,7 @@ namespace ConsultationsProject.Controllers
                 {
                     logger.LogError($"При изменении пациента с id = {id} произошла ошибка связывания модели");
                     return View("Error",
-                        new ErrorViewModel { Message = $"При изменении пациента с id = {id} произошла ошибка связывания модели"});
+                        new ErrorViewModel { Message = $"При изменении пациента с id = {id} произошла ошибка связывания модели" });
                 }
                 var _patient = db.Patients.Find(id);
                 if (_patient != null)
@@ -236,13 +253,13 @@ namespace ConsultationsProject.Controllers
                     var pensionCheck = db.Patients
                         .Where(x => x.PensionNumber == patient.PensionNumber)
                         .FirstOrDefault();
-                    if (pensionCheck == null||pensionCheck.PatientId==id)
+                    if (pensionCheck == null || pensionCheck.PatientId == id)
                     {
                         db.Entry(_patient).CurrentValues.SetValues(patient);
                         db.SaveChanges();
                         logger.LogInformation($"Пациент с id = {id} был изменен");
                         return RedirectToAction("Get", "Patient",
-                            new { id = patient.PatientId, message = "Пациент успешно изменен"});
+                            new { id = patient.PatientId, message = "Пациент успешно изменен" });
                     }
                     else
                     {
