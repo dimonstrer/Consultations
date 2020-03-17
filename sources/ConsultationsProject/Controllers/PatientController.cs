@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using ConsultationsProject.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace ConsultationsProject.Controllers
@@ -22,22 +23,32 @@ namespace ConsultationsProject.Controllers
         private readonly ILogger logger;
 
         /// <summary>
+        /// Конфигурация.
+        /// </summary>
+        private readonly IConfiguration config;
+
+        /// <summary>
         /// Количество консультаций на страницу у пациента.
         /// </summary>
-        private int ConsultationsPageSize = 5;
+        private readonly int ConsultationsPageSize;
+
 
         /// <summary>
         /// Количество пациентов на страницу.
         /// </summary>
-        private int PatientsPageSize = 10;
+        private readonly int PatientsPageSize;
 
         /// <summary>
         /// Конструктор контроллера.
         /// </summary>
         /// <param name="logger">Логгер.</param>
-        public PatientController(ILogger<PatientController> logger)
+        /// <param name="config">Конфигурация.</param>
+        public PatientController(ILogger<PatientController> logger, IConfiguration config)
         {
             this.logger = logger;
+            this.config = config;
+            PatientsPageSize = config.GetValue<int>("PaginationSettings:PatientsPageSize");
+            ConsultationsPageSize = config.GetValue<int>("PaginationSettings:ConsultationsPageSize");
         }
 
         /// <summary>
@@ -209,6 +220,7 @@ namespace ConsultationsProject.Controllers
         /// <returns>
         /// Представление с информацией о пациенте для редактирования.
         /// </returns>
+        
         [HttpGet("{id}")]
         public IActionResult Edit(int id)
         {

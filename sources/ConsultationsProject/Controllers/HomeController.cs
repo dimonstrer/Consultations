@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ConsultationsProject.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace ConsultationsProject.Controllers
 {
@@ -17,20 +18,28 @@ namespace ConsultationsProject.Controllers
         /// <summary>
         /// Количество пациентов на страницу.
         /// </summary>
-        private int PageSize = 10;
+        private int PatientsPageSize;
 
         /// <summary>
         /// Логгер
         /// </summary>
-        private readonly ILogger<HomeController> _logger;
+        private readonly ILogger<HomeController> logger;
+
+        /// <summary>
+        /// Конфигурация.
+        /// </summary>
+        private readonly IConfiguration config;
 
         /// <summary>
         /// Конструктор контроллера. 
         /// </summary>
         /// <param name="logger">Объект логгера.</param>
-        public HomeController(ILogger<HomeController> logger)
+        /// <param name="config">Конфигурация.</param>
+        public HomeController(ILogger<HomeController> logger, IConfiguration config)
         {
-            _logger = logger;
+            this.logger = logger;
+            this.config = config;
+            PatientsPageSize = config.GetValue<int>("PaginationSettings:PatientsPageSize");
         }
 
         /// <summary>
@@ -49,14 +58,14 @@ namespace ConsultationsProject.Controllers
             using (PatientsContext db = new PatientsContext())
             {
                 var count = db.Patients.Count();
-                PageViewModel pageViewModel = new PageViewModel(count, page, PageSize);
+                PageViewModel pageViewModel = new PageViewModel(count, page, PatientsPageSize);
 
                 if (page <= 0 || page > pageViewModel.TotalPages)
                     page = 1;
 
                 var patients = db.Patients
-                    .Skip((page - 1) * PageSize)
-                    .Take(PageSize)
+                    .Skip((page - 1) * PatientsPageSize)
+                    .Take(PatientsPageSize)
                     .ToList();
 
                 IndexViewModel result = new IndexViewModel { PageViewModel = pageViewModel, Patients = patients };
