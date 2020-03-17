@@ -46,6 +46,7 @@ namespace ConsultationsProject.Controllers
         /// <returns>
         /// Представление для добавления нового пациента.
         /// </returns>
+        
         [HttpGet]
         public IActionResult Add()
         {
@@ -128,13 +129,19 @@ namespace ConsultationsProject.Controllers
                 if (patient != null)
                 {
                     logger.LogInformation($"Запрос {HttpContext.Request.Query} вернул пациента с id {id}");
+
                     var count = db.Consultations.Where(x => x.PatientId == id).Count();
+                    var pageViewModel = new PageViewModel(count, page, ConsultationsPageSize);
+                    
+                    if (page <= 0 || page > pageViewModel.TotalPages)
+                        page = 1;
+
                     patient.Consultations = db.Consultations
                         .Where(x => x.PatientId == id)
                         .Skip((page - 1) * ConsultationsPageSize)
                         .Take(ConsultationsPageSize)
                         .ToList();
-                    var pageViewModel = new PageViewModel(count, page, ConsultationsPageSize);
+
                     var result = new PatientViewModel { PageViewModel = pageViewModel, Patient = patient };
                     return View(result);
                 }
@@ -178,12 +185,16 @@ namespace ConsultationsProject.Controllers
                 }
 
                 var count = patients.Count();
+                var pageViewModel = new PageViewModel(count, page, PatientsPageSize);
+
+                if (page <= 0 || page > pageViewModel.TotalPages)
+                    page = 1;
+
                 patients = patients
                     .Skip((page - 1) * ConsultationsPageSize)
                     .Take(ConsultationsPageSize)
                     .ToList();
 
-                var pageViewModel = new PageViewModel(count, page, PatientsPageSize);
                 var result = new IndexViewModel { PageViewModel = pageViewModel, Patients = patients };
 
                 logger.LogInformation($"Поисковой запрос {HttpContext.Request.Query} вернул {count} кол-во пациентов.");
@@ -198,7 +209,6 @@ namespace ConsultationsProject.Controllers
         /// <returns>
         /// Представление с информацией о пациенте для редактирования.
         /// </returns>
-
         [HttpGet("{id}")]
         public IActionResult Edit(int id)
         {
@@ -215,6 +225,7 @@ namespace ConsultationsProject.Controllers
                     new ErrorViewModel { Message = $"При попытке изменения пациент с id = {id} был не найден в базе данных" });
             }
         }
+
         /// <summary>
         /// Метод, ответственный за редактирование данных пациента в БД.
         /// </summary>

@@ -49,11 +49,16 @@ namespace ConsultationsProject.Controllers
             using (PatientsContext db = new PatientsContext())
             {
                 var count = db.Patients.Count();
+                PageViewModel pageViewModel = new PageViewModel(count, page, PageSize);
+
+                if (page <= 0 || page > pageViewModel.TotalPages)
+                    page = 1;
+
                 var patients = db.Patients
                     .Skip((page - 1) * PageSize)
                     .Take(PageSize)
                     .ToList();
-                PageViewModel pageViewModel = new PageViewModel(count, page, PageSize);
+
                 IndexViewModel result = new IndexViewModel { PageViewModel = pageViewModel, Patients = patients };
                 return View(result);
             }
