@@ -18,6 +18,10 @@ namespace ConsultationsProject.Models
         {
         }
 
+        public PatientsContext(DbContextOptions<PatientsContext> options)
+            : base(options)
+        { }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             var patients = new Patient[20];
@@ -47,14 +51,6 @@ namespace ConsultationsProject.Models
 
             modelBuilder.Entity<Patient>().HasData(patients);
             modelBuilder.Entity<Consultation>().HasData(consultations);
-        }
-        /// <summary>
-        /// Метод конфигурации контекста.
-        /// </summary>
-        /// <param name="optionsBuilder">Настройщик конфигурации.</param>
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=ConsultationsProjectDB;Trusted_Connection=True;");
         }
 
         /// <summary>
