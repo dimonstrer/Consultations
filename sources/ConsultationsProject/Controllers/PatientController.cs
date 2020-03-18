@@ -127,7 +127,7 @@ namespace ConsultationsProject.Controllers
             }
             catch (Exception e)
             {
-                logger.LogCritical($"При добавлении пациента произошла ошибка. ",e);
+                logger.LogCritical($"При добавлении пациента произошла ошибка. ", e);
                 return View("Error",
                             new ErrorViewModel
                             {
@@ -213,6 +213,7 @@ namespace ConsultationsProject.Controllers
         {
             try
             {
+                throw new Exception();
                 var patients = patientContext.Patients.AsEnumerable();
                 if (!String.IsNullOrEmpty(name))
                 {
@@ -240,16 +241,16 @@ namespace ConsultationsProject.Controllers
                 logger.LogInformation($"Поисковой запрос {HttpContext.Request.Query} вернул {count} кол-во пациентов.");
                 return PartialView(result);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 logger.LogCritical($"Произошла ошибка при поиске пациентов в базе данных." +
                     $" ФИО: {name}, СНИЛС: {pension}, страница: {page}", e);
-                return View("Error",
-                            new ErrorViewModel
-                            {
-                                Message = $"Произошла ошибка. Не удалось найти пациентов. " + 
+                return Json(new
+                {
+                    success = "false",
+                    message = $"Произошла ошибка. Не удалось найти пациентов. " +
                                 "Обратитесь к администратору."
-                            });
+                });
             }
         }
 
@@ -260,7 +261,7 @@ namespace ConsultationsProject.Controllers
         /// <returns>
         /// Представление с информацией о пациенте для редактирования.
         /// </returns>
-        
+
         [HttpGet("{id}")]
         public IActionResult Edit(int id)
         {
@@ -276,7 +277,7 @@ namespace ConsultationsProject.Controllers
                 return View("Error",
                     new ErrorViewModel { Message = $"При попытке изменения пациент с id = {id} был не найден в базе данных" });
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 logger.LogCritical($"Произошла ошибка при получении из базы данных пациента с id  = {id}", e);
                 return View("Error",
@@ -348,7 +349,7 @@ namespace ConsultationsProject.Controllers
                 return View("Error",
                     new ErrorViewModel { Message = $"При попытке изменения пациент с id = {id} был не найден в базе данных" });
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 logger.LogCritical($"Произошла ошибка при обновлении данных пациента с id  = {id}", e);
                 return View("Error",
@@ -384,12 +385,14 @@ namespace ConsultationsProject.Controllers
                 logger.LogError($"При попытке удаления пациент с id = {id} был не найден в базе данных");
                 return Json(new { success = "false", message = $"При попытке удаления пациент с id = {id} был не найден в базе данных" });
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 logger.LogCritical($"Произошла ошибка при удалении из базы данных пациента с id  = {id}", e);
-                return Json(new 
-                {success = "false",
-                    message = $"Произошла ошибка. Не удалось удалить пациента с id  = {id}. Обратитесь к администратору."});
+                return Json(new
+                {
+                    success = "false",
+                    message = $"Произошла ошибка. Не удалось удалить пациента с id  = {id}. Обратитесь к администратору."
+                });
             }
         }
     }

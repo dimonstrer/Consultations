@@ -129,8 +129,15 @@
             url += '&page=' + page;
         let response = await fetch(url);
         if (response.ok) {
-            let result = await response.text();
-            changeItems(result);
+            let result;
+            if (response.headers.get('Content-Type').indexOf('text/html') > -1) {
+                result = await response.text();
+                changeItems(result);
+            }
+            else {
+                result = await response.json();
+                alert(result.message);
+            }
         }
         else {
         alert("Ошибка HTTP: " + response.status);
