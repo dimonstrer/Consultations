@@ -373,7 +373,6 @@ namespace ConsultationsProject.Controllers
         {
             try
             {
-                throw new Exception();
                 var patient = patientContext.Patients.Find(id);
                 if (patient != null)
                 {
