@@ -61,21 +61,34 @@ namespace ConsultationsProject.Controllers
         [Route("patient-management/patients")]
         public IActionResult Index(int page = 1, string message = "")
         {
-            ViewBag.Message = message;
-            var count = patientContext.Patients.Count();
-            PageViewModel pageViewModel = new PageViewModel(count, page, PatientsPageSize);
+            try
+            {
+                ViewBag.Message = message;
+                var count = patientContext.Patients.Count();
+                PageViewModel pageViewModel = new PageViewModel(count, page, PatientsPageSize);
 
-            if (page <= 0 || page > pageViewModel.TotalPages)
-                page = 1;
+                if (page <= 0 || page > pageViewModel.TotalPages)
+                    page = 1;
 
-            var patients = patientContext.Patients
-                .Skip((page - 1) * PatientsPageSize)
-                .Take(PatientsPageSize)
-                .ToList();
+                var patients = patientContext.Patients
+                    .Skip((page - 1) * PatientsPageSize)
+                    .Take(PatientsPageSize)
+                    .ToList();
 
-            IndexViewModel result = new IndexViewModel { PageViewModel = pageViewModel, Patients = patients };
-            return View(result);
-
+                IndexViewModel result = new IndexViewModel { PageViewModel = pageViewModel, Patients = patients };
+                return View(result);
+            }
+            catch(Exception e)
+            {
+                logger.LogCritical($"Произошла ошибка при получении списка пациентов в базе данных." +
+                    $" Страница: {page}", e);
+                return View("Error",
+                            new ErrorViewModel
+                            {
+                                Message = $"Произошла ошибка. Не удалось найти пациентов. " +
+                                "Обратитесь к администратору."
+                            });
+            }
         }
 
         /// <summary>
