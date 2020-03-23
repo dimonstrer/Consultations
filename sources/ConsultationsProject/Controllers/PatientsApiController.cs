@@ -12,13 +12,25 @@ namespace ConsultationsProject.Controllers
     [ApiController]
     public class PatientsApiController : ControllerBase
     {
+        /// <summary>
+        /// Контекст БД с пациентами и консультациями.
+        /// </summary>
         private readonly PatientsContext patientContext;
 
+        /// <summary>
+        /// Конструктор контроллера.
+        /// </summary>
+        /// <param name="patientContext">Контекст БД с пациентами и консультациями.</param>
         public PatientsApiController(PatientsContext patientContext)
         {
             this.patientContext = patientContext;
         }
 
+        /// <summary>
+        /// Метод, возвращающий всех пациентов из БД.
+        /// </summary>
+        /// <returns>HTTP ответ, содержащий статус код и пациентов.</returns>
+        /// <response code="200">Возвращает всех пациентов.</response>
         [HttpGet]
         public ActionResult<IEnumerable<Patient>> GetAll()
         {
@@ -26,6 +38,13 @@ namespace ConsultationsProject.Controllers
             return Ok(patients);
         }
 
+        /// <summary>
+        /// Метод, возвращающий пациента из БД.
+        /// </summary>
+        /// <param name="id">Уникальный id пациента.</param>
+        /// <returns>HTTP ответ, содержащий статус код и пациента, или только статус код.</returns>
+        /// <response code="200">Возвращает пациента.</response>
+        /// <response code="404">Возвращает ошибку.</response>
         [HttpGet("{id}")]
         public ActionResult<Patient> Get(int id)
         {
@@ -35,6 +54,13 @@ namespace ConsultationsProject.Controllers
             return NotFound();
         }
 
+        /// <summary>
+        /// Метод, добавляющий пациента в БД.
+        /// </summary>
+        /// <param name="patient">Данные новом пациенте.</param>
+        /// <returns>HTTP ответ, содержащий ответ сервиса.</returns>
+        /// <response code="201">Возвращает ответ сервиса.</response>
+        /// <response code="400">Возвращает ответ сервиса.</response>
         [HttpPost]
         public ActionResult Add(Patient patient)
         {
@@ -49,6 +75,15 @@ namespace ConsultationsProject.Controllers
             return BadRequest(new { isSucces = false, ErrorMessage = "Полученные данные не прошли валидацию.", StatusCode = 400, Result = "" });
         }
 
+        /// <summary>
+        /// Метод, изменяющий данные пациента в БД.
+        /// </summary>
+        /// <param name="id">Уникальный id пациента.</param>
+        /// <param name="patient">Измененные данные пациента.</param>
+        /// <returns>HTTP ответ, содержащий ответ сервиса.</returns>
+        /// <response code="200">Возвращает ответ сервиса.</response>
+        /// <response code="400">Возвращает ответ сервиса.</response>
+        /// <response code="404">Возвращает ответ сервиса.</response>
         [HttpPut("{id}")]
         public ActionResult Edit(int id, Patient patient)
         {
@@ -67,6 +102,13 @@ namespace ConsultationsProject.Controllers
             return BadRequest(new { isSucces = false, ErrorMessage = "Полученные данные не прошли валидацию.", StatusCode = 400, Result = "" });
         }
 
+        /// <summary>
+        /// Метод, удаляющий пациента из БД.
+        /// </summary>
+        /// <param name="id">Уникальный id пациента.</param>
+        /// <returns>HTTP ответ, содержащий статус код.</returns>
+        /// <response code="200">Возвращает ответ об успешном удалении.</response>
+        /// <response code="400">Возвращает ошибку.</response>
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {

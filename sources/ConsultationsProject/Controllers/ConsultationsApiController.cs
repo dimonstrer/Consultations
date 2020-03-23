@@ -12,13 +12,26 @@ namespace ConsultationsProject.Controllers
     [ApiController]
     public class ConsultationsApiController : ControllerBase
     {
+        /// <summary>
+        /// Контекст БД с пациентами и консультациями.
+        /// </summary>
         private readonly PatientsContext patientContext;
 
+        /// <summary>
+        /// Конструктор контроллера.
+        /// </summary>
+        /// <param name="patientContext">Контекст БД с пациентами и консультациями.</param>
         public ConsultationsApiController(PatientsContext patientContext)
         {
             this.patientContext = patientContext;
         }
 
+        /// <summary>
+        /// Метод, возвращающий все консультации пациента из БД.
+        /// </summary>
+        /// <param name="patientId">Уникальный id пациента.</param>
+        /// <returns>HTTP ответ, содержащий статус код и консультации.</returns>
+        /// <response code="200">Возвращае все консультации.</response>
         [HttpGet("patient/consultations/{patient-id}")]
         public ActionResult<IEnumerable<Consultation>> GetAll([FromRoute(Name = "patient-id")]int patientId)
         {
@@ -27,6 +40,13 @@ namespace ConsultationsProject.Controllers
             return Ok(consultations);
         }
 
+        /// <summary>
+        /// Метод, возвращающий консультацию пациента из БД.
+        /// </summary>
+        /// <param name="id">Уникальный id консультации.</param>
+        /// <returns>HTTP ответ, содержащий статус код и консультацию, или только статус код.</returns>
+        /// <response code="200">Возвращает консультацию.</response>
+        /// <response code="404">Возвращает ошибку.</response>
         [HttpGet("consultations/{id}")]
         public ActionResult<Patient> Get(int id)
         {
@@ -36,6 +56,13 @@ namespace ConsultationsProject.Controllers
             return NotFound();
         }
 
+        /// <summary>
+        /// Метод, добавляющий консультацию пациента в БД.
+        /// </summary>
+        /// <param name="consultation">Данные новой консультации.</param>
+        /// <returns>HTTP ответ, содержащий ответ сервиса.</returns>
+        /// <response code="201">Возвращает ответ сервиса.</response>
+        /// <response code="400">Возвращает ответ сервиса.</response>
         [HttpPost("/consultations")]
         public ActionResult Add(Consultation consultation)
         {
@@ -50,6 +77,15 @@ namespace ConsultationsProject.Controllers
             return BadRequest(new { isSucces = false, ErrorMessage = "Полученные данные не прошли валидацию.", StatusCode = 400, Result = "" });
         }
 
+        /// <summary>
+        /// Метод, изменяющий данные консультации пациента в БД.
+        /// </summary>
+        /// <param name="id">Уникальный id консультации.</param>
+        /// <param name="consultation">Измененные данные консультации.</param>
+        /// <returns>HTTP ответ, содержащий ответ сервиса.</returns>
+        /// <response code="200">Возвращает ответ сервиса.</response>
+        /// <response code="400">Возвращает ответ сервиса.</response>
+        /// <response code="404">Возвращает ответ сервиса.</response>
         [HttpPut("consultations/{id}")]
         public ActionResult Edit(int id, Patient consultation)
         {
@@ -68,6 +104,13 @@ namespace ConsultationsProject.Controllers
             return BadRequest(new { isSucces = false, ErrorMessage = "Полученные данные не прошли валидацию.", StatusCode = 400, Result = "" });
         }
 
+        /// <summary>
+        /// Метод, удаляющий консультацию пациента из БД.
+        /// </summary>
+        /// <param name="id">Уникальный id консультации.</param>
+        /// <returns>HTTP ответ, содержащий статус код.</returns>
+        /// <response code="200">Возвращает ответ об успешном удалении.</response>
+        /// <response code="400">Возвращает ошибку.</response>
         [HttpDelete("consultations/{id}")]
         public ActionResult Delete(int id)
         {
