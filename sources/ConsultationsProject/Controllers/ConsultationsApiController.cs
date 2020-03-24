@@ -57,7 +57,7 @@ namespace ConsultationsProject.Controllers
         /// <response code="200">Возвращает консультацию.</response>
         /// <response code="404">Возвращает ошибку.</response>
         [HttpGet("consultations/{id}")]
-        public ActionResult<Patient> Get(int id)
+        public ActionResult<Consultation> Get(int id)
         {
             var consultation = patientContext.Consultations.Find(id);
             if (consultation != null)
