@@ -69,8 +69,7 @@ namespace ConsultationsProject.Controllers
                 patientContext.Add(patient);
                 patientContext.SaveChanges();
 
-                var id = patientContext.Patients.Find(patient).PatientId;
-                return StatusCode(201, new { isSuccess = true, ErrorMessage = "", StatusCode = 201, Result = id });
+                return StatusCode(201, new { isSuccess = true, ErrorMessage = "", StatusCode = 201, Result = patient.PatientId });
             }
             return BadRequest(new { isSucces = false, ErrorMessage = "Полученные данные не прошли валидацию.", StatusCode = 400, Result = "" });
         }
@@ -92,6 +91,7 @@ namespace ConsultationsProject.Controllers
                 var _patient = patientContext.Patients.Find(id);
                 if (_patient != null)
                 {
+                    patient.PatientId = id;
                     patientContext.Entry(_patient).CurrentValues.SetValues(patient);
                     patientContext.SaveChanges();
 

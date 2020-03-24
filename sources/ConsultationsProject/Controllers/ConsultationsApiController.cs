@@ -63,7 +63,7 @@ namespace ConsultationsProject.Controllers
         /// <returns>HTTP ответ, содержащий ответ сервиса.</returns>
         /// <response code="201">Возвращает ответ сервиса.</response>
         /// <response code="400">Возвращает ответ сервиса.</response>
-        [HttpPost("/consultations")]
+        [HttpPost("consultations")]
         public ActionResult Add(Consultation consultation)
         {
             if (ModelState.IsValid)
@@ -71,8 +71,7 @@ namespace ConsultationsProject.Controllers
                 patientContext.Consultations.Add(consultation);
                 patientContext.SaveChanges();
 
-                var id = patientContext.Consultations.Find(consultation).ConsultationId;
-                return StatusCode(201, new { isSuccess = true, ErrorMessage = "", StatusCode = 201, Result = id });
+                return StatusCode(201, new { isSuccess = true, ErrorMessage = "", StatusCode = 201, Result = consultation.ConsultationId });
             }
             return BadRequest(new { isSucces = false, ErrorMessage = "Полученные данные не прошли валидацию.", StatusCode = 400, Result = "" });
         }
@@ -87,13 +86,16 @@ namespace ConsultationsProject.Controllers
         /// <response code="400">Возвращает ответ сервиса.</response>
         /// <response code="404">Возвращает ответ сервиса.</response>
         [HttpPut("consultations/{id}")]
-        public ActionResult Edit(int id, Patient consultation)
+        public ActionResult Edit(int id, Consultation consultation)
         {
             if (ModelState.IsValid)
             {
                 var _consultation = patientContext.Consultations.Find(id);
                 if (_consultation != null)
                 {
+                    consultation.ConsultationId = id;
+                    consultation.PatientId = _consultation.PatientId;
+
                     patientContext.Entry(_consultation).CurrentValues.SetValues(consultation);
                     patientContext.SaveChanges();
 
