@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using ConsultationsProject.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace ConsultationsProject.Controllers
 {
@@ -18,12 +19,18 @@ namespace ConsultationsProject.Controllers
         private readonly PatientsContext patientContext;
 
         /// <summary>
+        /// Логгер
+        /// </summary>
+        private readonly ILogger logger;
+
+        /// <summary>
         /// Конструктор контроллера.
         /// </summary>
         /// <param name="patientContext">Контекст БД с пациентами и консультациями.</param>
-        public PatientsApiController(PatientsContext patientContext)
+        public PatientsApiController(PatientsContext patientContext,ILogger<PatientsApiController> logger)
         {
             this.patientContext = patientContext;
+            this.logger = logger;
         }
 
         /// <summary>
@@ -35,6 +42,7 @@ namespace ConsultationsProject.Controllers
         public ActionResult<IEnumerable<Patient>> GetAll()
         {
             var patients = patientContext.Patients.ToList();
+            logger.LogInformation($"Запрос вернул {patients.Count} пациентов.");
             return Ok(patients);
         }
 
@@ -50,7 +58,11 @@ namespace ConsultationsProject.Controllers
         {
             var patient = patientContext.Patients.Find(id);
             if (patient != null)
+            {
+                logger.LogInformation($"Запрос вернул пациента с id = {id}.");
                 return Ok(patient);
+            }
+            logger.LogError($"Пациент с id = {id} не найден в базе данных.");
             return NotFound();
         }
 
@@ -69,8 +81,10 @@ namespace ConsultationsProject.Controllers
                 patientContext.Add(patient);
                 patientContext.SaveChanges();
 
+                logger.LogInformation($"Добавлен новый пациент с id = {patient.PatientId}.");
                 return StatusCode(201, new { isSuccess = true, ErrorMessage = "", StatusCode = 201, Result = patient.PatientId });
             }
+            logger.LogError("При добавлении нового пациента данные не были получены от клиента, или они не прошли валидацию.");
             return BadRequest(new { isSucces = false, ErrorMessage = "Полученные данные не прошли валидацию.", StatusCode = 400, Result = "" });
         }
 
@@ -95,10 +109,13 @@ namespace ConsultationsProject.Controllers
                     patientContext.Entry(_patient).CurrentValues.SetValues(patient);
                     patientContext.SaveChanges();
 
+                    logger.LogInformation($"Изменен пациент с id = {id}.");
                     return Ok(new { isSuccess = true, ErrorMessage = "", StatusCode = 201, Result = id });
                 }
+                logger.LogError($"Пациент с id = {id} не найден в базе данных.");
                 return NotFound(new { isSucces = false, ErrorMessage = $"Пациент с id = {id} не найден в базе данных", StatusCode = 404, Result = "" });
             }
+            logger.LogError($"При изменении данных пациента с id = {id} данные не были получены от клиента, или они не прошли валидацию.");
             return BadRequest(new { isSucces = false, ErrorMessage = "Полученные данные не прошли валидацию.", StatusCode = 400, Result = "" });
         }
 
@@ -117,8 +134,11 @@ namespace ConsultationsProject.Controllers
             {
                 patientContext.Patients.Remove(patient);
                 patientContext.SaveChanges();
+
+                logger.LogInformation($"Пациент с id = {id} успешно удален из базы данных.");
                 return Ok();
             }
+            logger.LogError($"Пациент с id = {id} не найден в базе данных.");
             return NotFound();
         }
     }

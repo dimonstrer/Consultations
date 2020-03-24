@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using ConsultationsProject.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace ConsultationsProject.Controllers
 {
@@ -18,12 +19,19 @@ namespace ConsultationsProject.Controllers
         private readonly PatientsContext patientContext;
 
         /// <summary>
+        /// Логгер
+        /// </summary>
+        private readonly ILogger logger;
+
+        /// <summary>
         /// Конструктор контроллера.
         /// </summary>
         /// <param name="patientContext">Контекст БД с пациентами и консультациями.</param>
-        public ConsultationsApiController(PatientsContext patientContext)
+        /// <param name="logger">Логгер.</param>
+        public ConsultationsApiController(PatientsContext patientContext, ILogger<ConsultationsApiController> logger)
         {
             this.patientContext = patientContext;
+            this.logger = logger;
         }
 
         /// <summary>
@@ -37,6 +45,7 @@ namespace ConsultationsProject.Controllers
         {
             var consultations = patientContext.Consultations
                 .Where(x => x.PatientId == patientId).ToList();
+            logger.LogInformation($"Запрос вернул {consultations.Count} консультаций пациента с id = {patientId}.");
             return Ok(consultations);
         }
 
@@ -52,7 +61,11 @@ namespace ConsultationsProject.Controllers
         {
             var consultation = patientContext.Consultations.Find(id);
             if (consultation != null)
+            {
+                logger.LogInformation($"Запрос вернул консультацию с id = {id}.");
                 return Ok(consultation);
+            }
+            logger.LogError($"Консультация с id = {id} не найдена в базе данных.");
             return NotFound();
         }
 
@@ -71,8 +84,11 @@ namespace ConsultationsProject.Controllers
                 patientContext.Consultations.Add(consultation);
                 patientContext.SaveChanges();
 
+                logger.LogInformation($"Добавлена новая консультация с id = {consultation.ConsultationId}" +
+                    $" пациенту с id = {consultation.PatientId}.");
                 return StatusCode(201, new { isSuccess = true, ErrorMessage = "", StatusCode = 201, Result = consultation.ConsultationId });
             }
+            logger.LogError("При добавлении новой консультации данные не были получены от клиента, или они не прошли валидацию.");
             return BadRequest(new { isSucces = false, ErrorMessage = "Полученные данные не прошли валидацию.", StatusCode = 400, Result = "" });
         }
 
@@ -99,10 +115,13 @@ namespace ConsultationsProject.Controllers
                     patientContext.Entry(_consultation).CurrentValues.SetValues(consultation);
                     patientContext.SaveChanges();
 
+                    logger.LogInformation($"Изменена консультация с id = {id} пациента с id = {consultation.PatientId}.");
                     return Ok(new { isSuccess = true, ErrorMessage = "", StatusCode = 201, Result = id });
                 }
+                logger.LogError($"Консультация с id = {id} не найдена в базе данных.");
                 return NotFound(new { isSucces = false, ErrorMessage = $"Консультация с id = {id} не найдена в базе данных.", StatusCode = 404, Result = "" });
             }
+            logger.LogError($"При изменении данных консультации с id = {id} данные не были получены от клиента, или они не прошли валидацию.");
             return BadRequest(new { isSucces = false, ErrorMessage = "Полученные данные не прошли валидацию.", StatusCode = 400, Result = "" });
         }
 
@@ -121,8 +140,11 @@ namespace ConsultationsProject.Controllers
             {
                 patientContext.Consultations.Remove(consultation);
                 patientContext.SaveChanges();
+
+                logger.LogInformation($"Консультация с id = {id} успешно удалена из базы данных.");
                 return Ok();
             }
+            logger.LogError($"Консультация с id = {id} была не найдена в базе данных.");
             return NotFound();
         }
     }
