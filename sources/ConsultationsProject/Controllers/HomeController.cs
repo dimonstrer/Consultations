@@ -13,6 +13,7 @@ namespace ConsultationsProject.Controllers
     /// <summary>
     /// Контроллер, ответственный за обработку запросов главной страницы сайта (списка пациентов).
     /// </summary>
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class HomeController : Controller
     {
         /// <summary>

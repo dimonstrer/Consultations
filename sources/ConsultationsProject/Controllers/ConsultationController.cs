@@ -12,6 +12,7 @@ namespace ConsultationsProject.Controllers
     /// <summary>
     /// Контроллер, ответственный за обработку запросов с консультациями пациентов.
     /// </summary>
+    [ApiExplorerSettings(IgnoreApi = true)]
     [Route("consultation-management")]
     public class ConsultationController : Controller
     {

@@ -14,6 +14,7 @@ namespace ConsultationsProject.Controllers
     /// <summary>
     /// Контроллер, ответственный за обработку запросов с пациентами.
     /// </summary>
+    [ApiExplorerSettings(IgnoreApi = true)]
     [Route("patient-management/patients")]
     public class PatientController : Controller
     {
