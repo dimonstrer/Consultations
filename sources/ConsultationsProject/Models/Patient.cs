@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace ConsultationsProject.Models
@@ -62,6 +63,7 @@ namespace ConsultationsProject.Models
         /// <summary>
         /// Список консультаций пациента (навигационное св-во).
         /// </summary>
+        [JsonIgnore]
         public List<Consultation> Consultations { get; set; }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ConsultationsProject.Models;
+using ConsultationsProject.Models.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -14,9 +15,9 @@ namespace ConsultationsProject.Controllers
     public class ConsultationsApiController : ControllerBase
     {
         /// <summary>
-        /// Контекст БД с пациентами и консультациями.
+        /// Сервис пациентов и консультаций.
         /// </summary>
-        private readonly PatientsContext patientContext;
+        private readonly IPatientService patientService;
 
         /// <summary>
         /// Логгер
@@ -26,11 +27,11 @@ namespace ConsultationsProject.Controllers
         /// <summary>
         /// Конструктор контроллера.
         /// </summary>
-        /// <param name="patientContext">Контекст БД с пациентами и консультациями.</param>
+        /// <param name="patientService">Сервис, ответственный за бизнес логику в работе с пациентами и консультациями.</param>
         /// <param name="logger">Логгер.</param>
-        public ConsultationsApiController(PatientsContext patientContext, ILogger<ConsultationsApiController> logger)
+        public ConsultationsApiController(IPatientService patientService, ILogger<ConsultationsApiController> logger)
         {
-            this.patientContext = patientContext;
+            this.patientService = patientService;
             this.logger = logger;
         }
 
@@ -43,8 +44,7 @@ namespace ConsultationsProject.Controllers
         [HttpGet("patient/consultations/{patient-id}")]
         public ActionResult<IEnumerable<Consultation>> GetAll([FromRoute(Name = "patient-id")]int patientId)
         {
-            var consultations = patientContext.Consultations
-                .Where(x => x.PatientId == patientId).ToList();
+            var consultations = patientService.GetConsultations(patientId).ToList();
             logger.LogInformation($"Запрос вернул {consultations.Count} консультаций пациента с id = {patientId}.");
             return Ok(consultations);
         }
@@ -59,7 +59,7 @@ namespace ConsultationsProject.Controllers
         [HttpGet("consultations/{id}")]
         public ActionResult<Consultation> Get(int id)
         {
-            var consultation = patientContext.Consultations.Find(id);
+            var consultation = patientService.GetConsultation(id);
             if (consultation != null)
             {
                 logger.LogInformation($"Запрос вернул консультацию с id = {id}.");
@@ -81,8 +81,7 @@ namespace ConsultationsProject.Controllers
         {
             if (ModelState.IsValid)
             {
-                patientContext.Consultations.Add(consultation);
-                patientContext.SaveChanges();
+                patientService.AddConsultation(consultation);
 
                 logger.LogInformation($"Добавлена новая консультация с id = {consultation.ConsultationId}" +
                     $" пациенту с id = {consultation.PatientId}.");
@@ -106,14 +105,13 @@ namespace ConsultationsProject.Controllers
         {
             if (ModelState.IsValid)
             {
-                var _consultation = patientContext.Consultations.Find(id);
+                var _consultation = patientService.GetConsultation(id);
                 if (_consultation != null)
                 {
                     consultation.ConsultationId = id;
                     consultation.PatientId = _consultation.PatientId;
 
-                    patientContext.Entry(_consultation).CurrentValues.SetValues(consultation);
-                    patientContext.SaveChanges();
+                    patientService.UpdateConsultation(consultation);
 
                     logger.LogInformation($"Изменена консультация с id = {id} пациента с id = {consultation.PatientId}.");
                     return Ok(new { isSuccess = true, ErrorMessage = "", StatusCode = 201, Result = id });
@@ -135,11 +133,10 @@ namespace ConsultationsProject.Controllers
         [HttpDelete("consultations/{id}")]
         public ActionResult Delete(int id)
         {
-            var consultation = patientContext.Consultations.Find(id);
+            var consultation = patientService.GetConsultation(id);
             if (consultation != null)
             {
-                patientContext.Consultations.Remove(consultation);
-                patientContext.SaveChanges();
+                patientService.DeleteConsultation(id);
 
                 logger.LogInformation($"Консультация с id = {id} успешно удалена из базы данных.");
                 return Ok();

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ConsultationsProject.Models;
+using ConsultationsProject.Models.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -14,22 +15,23 @@ namespace ConsultationsProject.Controllers
     public class PatientsApiController : ControllerBase
     {
         /// <summary>
-        /// Контекст БД с пациентами и консультациями.
-        /// </summary>
-        private readonly PatientsContext patientContext;
-
-        /// <summary>
         /// Логгер
         /// </summary>
         private readonly ILogger logger;
 
         /// <summary>
+        /// Сервис пациентов и консультаций.
+        /// </summary>
+        private readonly IPatientService patientService;
+
+        /// <summary>
         /// Конструктор контроллера.
         /// </summary>
-        /// <param name="patientContext">Контекст БД с пациентами и консультациями.</param>
-        public PatientsApiController(PatientsContext patientContext,ILogger<PatientsApiController> logger)
+        /// <param name="patientService">Сервис, ответственный за бизнес логику в работе с пациентами и консультациями.</param>
+        /// <param name="logger">Логгер.</param>
+        public PatientsApiController(IPatientService patientService,ILogger<PatientsApiController> logger)
         {
-            this.patientContext = patientContext;
+            this.patientService = patientService;
             this.logger = logger;
         }
 
@@ -41,8 +43,8 @@ namespace ConsultationsProject.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<Patient>> GetAll()
         {
-            var patients = patientContext.Patients.ToList();
-            logger.LogInformation($"Запрос вернул {patients.Count} пациентов.");
+            var patients = patientService.GetPatients().ToList();
+            logger.LogInformation($"Запрос вернул {patients.Count()} пациентов.");
             return Ok(patients);
         }
 
@@ -56,7 +58,7 @@ namespace ConsultationsProject.Controllers
         [HttpGet("{id}")]
         public ActionResult<Patient> Get(int id)
         {
-            var patient = patientContext.Patients.Find(id);
+            var patient = patientService.GetPatient(id);
             if (patient != null)
             {
                 logger.LogInformation($"Запрос вернул пациента с id = {id}.");
@@ -78,11 +80,19 @@ namespace ConsultationsProject.Controllers
         {
             if (ModelState.IsValid)
             {
-                patientContext.Add(patient);
-                patientContext.SaveChanges();
 
-                logger.LogInformation($"Добавлен новый пациент с id = {patient.PatientId}.");
-                return StatusCode(201, new { isSuccess = true, ErrorMessage = "", StatusCode = 201, Result = patient.PatientId });
+                if (patientService.AddPatient(patient))
+                {
+                    logger.LogInformation($"Добавлен новый пациент с id = {patient.PatientId}.");
+                    return StatusCode(201, new { isSuccess = true, ErrorMessage = "", StatusCode = 201, Result = patient.PatientId });
+                }
+                else
+                {
+                    logger.LogError($"При добавлении нового пациента " +
+                            $"обнаружен пациент с идентичным СНИЛС = {patient.PensionNumber}.");
+                    return BadRequest(new { isSucces = false, ErrorMessage = "При добавлении нового пациента " +
+                            $"обнаружен пациент с идентичным СНИЛС = {patient.PensionNumber}.", StatusCode = 400, Result = "" });
+                }
             }
             logger.LogError("При добавлении нового пациента данные не были получены от клиента, или они не прошли валидацию.");
             return BadRequest(new { isSucces = false, ErrorMessage = "Полученные данные не прошли валидацию.", StatusCode = 400, Result = "" });
@@ -102,15 +112,28 @@ namespace ConsultationsProject.Controllers
         {
             if (ModelState.IsValid)
             {
-                var _patient = patientContext.Patients.Find(id);
+                var _patient = patientService.GetPatient(id);
                 if (_patient != null)
                 {
                     patient.PatientId = id;
-                    patientContext.Entry(_patient).CurrentValues.SetValues(patient);
-                    patientContext.SaveChanges();
-
-                    logger.LogInformation($"Изменен пациент с id = {id}.");
-                    return Ok(new { isSuccess = true, ErrorMessage = "", StatusCode = 201, Result = id });
+                    if (patientService.UpdatePatient(patient))
+                    {
+                        logger.LogInformation($"Изменен пациент с id = {id}.");
+                        return Ok(new { isSuccess = true, ErrorMessage = "", StatusCode = 201, Result = id });
+                    }
+                    else
+                    {
+                        logger.LogError($"При добавлении нового пациента " +
+                            $"обнаружен пациент с идентичным СНИЛС = {patient.PensionNumber}.");
+                        return BadRequest(new
+                        {
+                            isSucces = false,
+                            ErrorMessage = "При добавлении нового пациента " +
+                                $"обнаружен пациент с идентичным СНИЛС = {patient.PensionNumber}.",
+                            StatusCode = 400,
+                            Result = ""
+                        });
+                    }
                 }
                 logger.LogError($"Пациент с id = {id} не найден в базе данных.");
                 return NotFound(new { isSucces = false, ErrorMessage = $"Пациент с id = {id} не найден в базе данных", StatusCode = 404, Result = "" });
@@ -129,11 +152,10 @@ namespace ConsultationsProject.Controllers
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
-            var patient = patientContext.Patients.Find(id);
+            var patient = patientService.GetPatient(id);
             if (patient != null)
             {
-                patientContext.Patients.Remove(patient);
-                patientContext.SaveChanges();
+                patientService.DeletePatient(id);
 
                 logger.LogInformation($"Пациент с id = {id} успешно удален из базы данных.");
                 return Ok();
