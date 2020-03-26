@@ -59,13 +59,15 @@ namespace ConsultationsProject.Models.Services
         {
             patient.PensionNumber = Regex.Replace(patient.PensionNumber, "[^0-9]", "");
 
+            var prevPatient = patientsContext.Patients.Find(patient.PatientId);
+
             var pensionCheck = patientsContext.Patients
                         .Where(x => x.PensionNumber == patient.PensionNumber)
                         .FirstOrDefault();
 
             if ((pensionCheck == null) || (pensionCheck.PatientId == patient.PatientId))
             {
-                patientsContext.Entry(pensionCheck).CurrentValues.SetValues(patient);
+                patientsContext.Entry(prevPatient).CurrentValues.SetValues(patient);
                 patientsContext.SaveChanges();
                 return true;
             }
