@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using ConsultationsProject.Models;
 using Microsoft.Extensions.Configuration;
+using ConsultationsProject.Models.Interfaces;
 
 namespace ConsultationsProject.Controllers
 {
@@ -32,21 +33,21 @@ namespace ConsultationsProject.Controllers
         private readonly IConfiguration config;
 
         /// <summary>
-        /// Контекст БД с пациентами и консультациями.
+        /// Сервис пациентов и консультаций.
         /// </summary>
-        private readonly PatientsContext patientContext;
+        private readonly IPatientService patientService;
 
         /// <summary>
         /// Конструктор контроллера. 
         /// </summary>
         /// <param name="logger">Объект логгера.</param>
         /// <param name="config">Конфигурация.</param>
-        /// <param name="patientContext">Контекст БД с пациентами и консультациями.</param>
-        public HomeController(ILogger<HomeController> logger, IConfiguration config, PatientsContext patientContext)
+        /// <param name="patientService">Сервис, ответственный за бизнес логику в работе с пациентами и консультациями.</param>
+        public HomeController(ILogger<HomeController> logger, IConfiguration config, IPatientService patientService)
         {
             this.logger = logger;
             this.config = config;
-            this.patientContext = patientContext;
+            this.patientService = patientService;
             PatientsPageSize = config.GetValue<int>("PaginationSettings:PatientsPageSize");
         }
 
@@ -65,13 +66,13 @@ namespace ConsultationsProject.Controllers
             try
             {
                 ViewBag.Message = message;
-                var count = patientContext.Patients.Count();
+                var count = patientService.GetPatients().Count();
                 PageViewModel pageViewModel = new PageViewModel(count, page, PatientsPageSize);
 
                 if (page <= 0 || page > pageViewModel.TotalPages)
                     page = 1;
 
-                var patients = patientContext.Patients
+                var patients = patientService.GetPatients()
                     .Skip((page - 1) * PatientsPageSize)
                     .Take(PatientsPageSize)
                     .ToList();
@@ -91,7 +92,6 @@ namespace ConsultationsProject.Controllers
                             });
             }
         }
-
         /// <summary>
         /// Метод, созданный по умолчанию.
         /// </summary>

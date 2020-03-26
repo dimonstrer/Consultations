@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ConsultationsProject.Models;
+using ConsultationsProject.Models.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -22,19 +23,19 @@ namespace ConsultationsProject.Controllers
         private readonly ILogger logger;
 
         /// <summary>
-        /// Контекст БД с пациентами и консультациями.
+        /// Сервис пациентов и консультаций.
         /// </summary>
-        private readonly PatientsContext patientContext;
+        private readonly IPatientService patientService;
 
         /// <summary>
         /// Конструктор контроллера.
         /// </summary>
         /// <param name="logger">Логгер.</param>
-        /// <param name="patientContext">Контекст БД с пациентами и консультациями.</param>
-        public ConsultationController(ILogger<ConsultationController> logger, PatientsContext patientContext)
+        /// <param name="patientService">Сервис, ответственный за бизнес логику в работе с пациентами и консультациями.</param>
+        public ConsultationController(ILogger<ConsultationController> logger, IPatientService patientService)
         {
             this.logger = logger;
-            this.patientContext = patientContext;
+            this.patientService = patientService;
         }
 
         /// <summary>
@@ -50,9 +51,8 @@ namespace ConsultationsProject.Controllers
         {
             try
             {
-                var patient = patientContext.Patients
-                    .FromSqlRaw($"SELECT * FROM PATIENTS WHERE PatientId = {patientId}");
-                if (patient.Count() != 0)
+                var patient = patientService.GetPatient(patientId);
+                if (patient != null)
                 {
                     logger.LogInformation($"Добавление консультации для пациента с id = {patientId}.");
                     ViewBag.PatientId = patientId;
@@ -67,7 +67,7 @@ namespace ConsultationsProject.Controllers
                     $"Пациент с id = {patientId} не найден в базе данных."
                     });
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 logger.LogCritical($"Произошла ошибка при получении пациента с id  = {patientId} и его консультаций.", e);
                 return View("Error",
@@ -94,7 +94,8 @@ namespace ConsultationsProject.Controllers
         {
             try
             {
-                ViewBag.PatientId = consultation.PatientId;
+                var patientId = consultation.PatientId;
+                ViewBag.PatientId = patientId;
                 if (consultation == null)
                 {
                     logger.LogError($"При добавлении консультации пациенту с id {consultation.PatientId} произошла ошибка связывания модели.");
@@ -105,22 +106,19 @@ namespace ConsultationsProject.Controllers
                         $" произошла ошибка связывания модели."
                         });
                 }
-                var patient = patientContext.Patients.
-                    FromSqlRaw($"SELECT * FROM PATIENTS WHERE PatientId = { consultation.PatientId}");
-                if (patient.Count() != 0)
-                {
-                    if (consultation.Day < DateTime.Parse("01/01/1880") ||
-                        consultation.Day > DateTime.Now.AddYears(1))
-                    {
-                        logger.LogError($"При добавлении новой консультации пациенту с id = {consultation.PatientId} произошла ошибка: " +
-                            $"Недопустимая дата: {consultation.Day}");
-                        ModelState.AddModelError("Day", $"День консультации должен быть в промежутке" +
-                            $" от {DateTime.Parse("01/01/1880").ToString("d")} до {DateTime.Now.AddYears(1).ToString("d")}");
-                        return View(consultation);
-                    }
 
-                    patientContext.Consultations.Add(consultation);
-                    patientContext.SaveChanges();
+                if (consultation.Day < DateTime.Parse("01/01/1880") ||
+                        consultation.Day > DateTime.Now.AddYears(1))
+                {
+                    logger.LogError($"При добавлении новой консультации пациенту с id = {consultation.PatientId} произошла ошибка: " +
+                        $"Недопустимая дата: {consultation.Day}");
+                    ModelState.AddModelError("Day", $"День консультации должен быть в промежутке" +
+                        $" от {DateTime.Parse("01/01/1880").ToString("d")} до {DateTime.Now.AddYears(1).ToString("d")}");
+                    return View(consultation);
+                }
+
+                if (patientService.AddConsultation(consultation))
+                {
                     logger.LogInformation($"Пациенту с id = {consultation.PatientId} была добавлена новая консультация.");
                     return RedirectToAction("Get", "Patient",
                         new { id = consultation.PatientId, message = "Консультация успешно добавлена" });
@@ -137,7 +135,7 @@ namespace ConsultationsProject.Controllers
                         });
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 logger.LogCritical($"При добавлении консультации пациенту с id = {consultation.PatientId} произошла ошибка. ", e);
                 return View("Error",
@@ -162,10 +160,10 @@ namespace ConsultationsProject.Controllers
         {
             try
             {
-                var consultation = patientContext.Consultations.FromSqlRaw($"SELECT * FROM CONSULTATIONS WHERE ConsultationId = {id}");
-                if (consultation.Count() != 0)
+                var consultation = patientService.GetConsultation(id);
+                if (consultation != null)
                 {
-                    return View(consultation.FirstOrDefault());
+                    return View(consultation);
                 }
                 logger.LogError($"При изменении консультации произошла ошибка: " +
                     $"Консультация с id = {id} не найдена в базе данных");
@@ -176,7 +174,7 @@ namespace ConsultationsProject.Controllers
                     $"Консультация с id = {id} не найдена в базе данных"
                         });
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 logger.LogCritical($"Произошла ошибка при получении из базы данных консультации с id  = {id}", e);
                 return View("Error",
@@ -210,36 +208,35 @@ namespace ConsultationsProject.Controllers
                     return View("Error",
                         new ErrorViewModel { Message = $"При изменении консультации с id {id} произошла ошибка связывания модели." });
                 }
-                var consultationId = consultation.ConsultationId;
-                var _consultation = patientContext.Consultations.FromSqlRaw
-                    ($"SELECT * FROM CONSULTATIONS WHERE ConsultationId = {id}");
-                if (_consultation.Count() != 0)
-                {
-                    if (consultation.Day < DateTime.Parse("01/01/1880") ||
-                        consultation.Day > DateTime.Now.AddYears(1))
-                    {
-                        logger.LogError($"При изменении пациенту с id = {consultation.PatientId}" +
-                            $" консультации с id = {id} произошла ошибка: Недопустимая дата: {consultation.Day}");
-                        ModelState.AddModelError("Day", $"День консультации должен быть в промежутке" +
-                            $" от {DateTime.Parse("01/01/1880").ToString("d")} до {DateTime.Now.AddYears(1).ToString("d")}");
-                        return View(consultation);
-                    }
 
-                    patientContext.Entry(_consultation.FirstOrDefault()).CurrentValues.SetValues(consultation);
-                    patientContext.SaveChanges();
+                if (consultation.Day < DateTime.Parse("01/01/1880") ||
+                        consultation.Day > DateTime.Now.AddYears(1))
+                {
+                    logger.LogError($"При изменении пациенту с id = {consultation.PatientId}" +
+                        $" консультации с id = {id} произошла ошибка: Недопустимая дата: {consultation.Day}");
+                    ModelState.AddModelError("Day", $"День консультации должен быть в промежутке" +
+                        $" от {DateTime.Parse("01/01/1880").ToString("d")} до {DateTime.Now.AddYears(1).ToString("d")}");
+                    return View(consultation);
+                }
+
+                if (patientService.UpdateConsultation(consultation) == true)
+                {
                     logger.LogInformation($"У пациента с id = {consultation.PatientId}" +
                         $" была изменена консультация с id = {id}");
                     return RedirectToAction("Get", "Patient",
                         new { id = consultation.PatientId, message = "Консультация успешно изменена" });
                 }
-                logger.LogError($"При изменении консультации произошла ошибка: " +
-                    $"Консультация с id = {id} не найдена в базе данных");
-                return View("Error",
-                        new ErrorViewModel
-                        {
-                            Message = $"При изменении консультации произошла ошибка: " +
-                    $"Консультация с id = {id} не найдена в базе данных"
-                        });
+                else
+                {
+                    logger.LogError($"При изменении консультации произошла ошибка: " +
+                        $"Консультация с id = {id} или пациент с id = {consultation.PatientId} не найдены в базе данных");
+                    return View("Error",
+                            new ErrorViewModel
+                            {
+                                Message = $"При изменении консультации произошла ошибка: " +
+                        $"Консультация с id = {id} или пациент с id = {consultation.PatientId} не найдены в базе данных"
+                            });
+                }
             }
             catch (Exception e)
             {
@@ -267,13 +264,11 @@ namespace ConsultationsProject.Controllers
         {
             try
             {
-                var consultation = patientContext.Consultations.FromSqlRaw
-                    ($"SELECT * FROM CONSULTATIONS WHERE ConsultationId = {id}");
-                if (consultation.Count() != 0)
+                var consultation = patientService.GetConsultation(id);
+                if (consultation != null)
                 {
-                    var patientId = consultation.FirstOrDefault().PatientId;
-                    patientContext.Consultations.Remove(consultation.FirstOrDefault());
-                    patientContext.SaveChanges();
+                    var patientId = consultation.PatientId;
+                    patientService.DeleteConsultation(id);
                     logger.LogInformation($"У пациента с id = {patientId} была удалена консультация с id = {id}");
                     return Json(new { success = "true", message = "Консультация успешно удалена" });
                 }
@@ -286,7 +281,7 @@ namespace ConsultationsProject.Controllers
                     $"Консультация с id = {id} не найдена в базе данных"
                 });
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 logger.LogCritical($"Произошла ошибка при удалении из базы данных консультации с id  = {id}", e);
                 return Json(new

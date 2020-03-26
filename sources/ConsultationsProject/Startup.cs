@@ -5,6 +5,8 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using ConsultationsProject.Models;
+using ConsultationsProject.Models.Interfaces;
+using ConsultationsProject.Models.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -35,6 +37,7 @@ namespace ConsultationsProject
             services.AddControllersWithViews();
             services.AddDbContext<PatientsContext>(options => 
                 options.UseSqlServer(Configuration.GetConnectionString("PatientsDbConnectionString")));
+            services.AddScoped<IPatientService, PatientService>();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Patients and Consultations API", Version = "v1" });

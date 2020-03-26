@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ConsultationsProject.Models;
+using ConsultationsProject.Models.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -29,15 +30,9 @@ namespace ConsultationsProject.Controllers
         private readonly IConfiguration config;
 
         /// <summary>
-        /// Контекст БД с пациентами и консультациями.
-        /// </summary>
-        private readonly PatientsContext patientContext;
-
-        /// <summary>
         /// Количество консультаций на страницу у пациента.
         /// </summary>
         private readonly int ConsultationsPageSize;
-
 
         /// <summary>
         /// Количество пациентов на страницу.
@@ -45,16 +40,21 @@ namespace ConsultationsProject.Controllers
         private readonly int PatientsPageSize;
 
         /// <summary>
+        /// Сервис пациентов и консультаций.
+        /// </summary>
+        private readonly IPatientService patientService;
+
+        /// <summary>
         /// Конструктор контроллера.
         /// </summary>
         /// <param name="logger">Логгер.</param>
         /// <param name="config">Конфигурация.</param>
-        /// <param name="patientContext">Контекст БД с пациентами и консультациями.</param>
-        public PatientController(ILogger<PatientController> logger, IConfiguration config, PatientsContext patientContext)
+        /// <param name="patientService">Сервис, ответственный за бизнес логику в работе с пациентами и консультациями.</param>
+        public PatientController(ILogger<PatientController> logger, IConfiguration config, IPatientService patientService)
         {
             this.logger = logger;
             this.config = config;
-            this.patientContext = patientContext;
+            this.patientService = patientService;
             PatientsPageSize = config.GetValue<int>("PaginationSettings:PatientsPageSize");
             ConsultationsPageSize = config.GetValue<int>("PaginationSettings:ConsultationsPageSize");
         }
@@ -65,7 +65,6 @@ namespace ConsultationsProject.Controllers
         /// <returns>
         /// Представление для добавления нового пациента.
         /// </returns>
-
         [HttpGet]
         public IActionResult Add()
         {
@@ -81,7 +80,6 @@ namespace ConsultationsProject.Controllers
         /// Представление со страницей добавления пациента с введенными ранее данными, если дата рождения не пройдет валидацию.
         /// Представление главной страницы с сообщением об успешном добавлении пациента.
         /// </returns>
-
         [HttpPost]
         public IActionResult Add(Patient patient)
         {
@@ -105,15 +103,9 @@ namespace ConsultationsProject.Controllers
                             $" от {DateTime.Parse("01/01/1880").ToString("d")} до {DateTime.Now.AddYears(1).ToString("d")}");
                         return View(patient);
                     }
-
-                    patient.PensionNumber = Regex.Replace(patient.PensionNumber, "[^0-9]", "");
-                    var result = patientContext.Patients
-                        .Where(x => x.PensionNumber == patient.PensionNumber)
-                        .FirstOrDefault();
-                    if (result == null)
+                    
+                    if (patientService.AddPatient(patient) == true)
                     {
-                        patientContext.Patients.Add(patient);
-                        patientContext.SaveChanges();
                         logger.LogInformation($"Добавлен новый пациент в базу данных. СНИЛС: {patient.PensionNumber}.");
                         return RedirectToAction("Index", "Home", new { message = "Пациент успешно добавлен" });
                     }
@@ -156,18 +148,18 @@ namespace ConsultationsProject.Controllers
 
                 ViewBag.Message = message;
 
-                var patient = patientContext.Patients.Find(id);
+                var patient = patientService.GetPatient(id);
                 if (patient != null)
                 {
                     logger.LogInformation($"Запрос {HttpContext.Request.Query} вернул пациента с id {id}");
 
-                    var count = patientContext.Consultations.Where(x => x.PatientId == id).Count();
+                    var count = patientService.GetConsultations(id).Count();
                     var pageViewModel = new PageViewModel(count, page, ConsultationsPageSize);
 
                     if (page <= 0 || page > pageViewModel.TotalPages)
                         page = 1;
 
-                    patient.Consultations = patientContext.Consultations
+                    patient.Consultations = patientService.GetConsultations(id)
                         .Where(x => x.PatientId == id)
                         .Skip((page - 1) * ConsultationsPageSize)
                         .Take(ConsultationsPageSize)
@@ -214,8 +206,7 @@ namespace ConsultationsProject.Controllers
         {
             try
             {
-                throw new Exception();
-                var patients = patientContext.Patients.AsEnumerable();
+                var patients = patientService.GetPatients().AsEnumerable();
                 if (!String.IsNullOrEmpty(name))
                 {
                     patients = patients.Where(x => EF.Functions.Like
@@ -232,12 +223,12 @@ namespace ConsultationsProject.Controllers
                 if (page <= 0 || page > pageViewModel.TotalPages)
                     page = 1;
 
-                patients = patients
+                var _patients = patients
                     .Skip((page - 1) * ConsultationsPageSize)
                     .Take(ConsultationsPageSize)
                     .ToList();
 
-                var result = new IndexViewModel { PageViewModel = pageViewModel, Patients = patients };
+                var result = new IndexViewModel { PageViewModel = pageViewModel, Patients = _patients };
 
                 logger.LogInformation($"Поисковой запрос {HttpContext.Request.Query} вернул {count} кол-во пациентов.");
                 return PartialView(result);
@@ -262,13 +253,12 @@ namespace ConsultationsProject.Controllers
         /// <returns>
         /// Представление с информацией о пациенте для редактирования.
         /// </returns>
-
         [HttpGet("{id}")]
         public IActionResult Edit(int id)
         {
             try
             {
-                var patient = patientContext.Patients.Find(id);
+                var patient = patientService.GetPatient(id);
                 if (patient != null)
                 {
                     logger.LogInformation($"Пациент с id = {id} был изменен.");
@@ -313,27 +303,22 @@ namespace ConsultationsProject.Controllers
                     return View("Error",
                         new ErrorViewModel { Message = $"При изменении пациента с id = {id} произошла ошибка связывания модели" });
                 }
-                var _patient = patientContext.Patients.Find(id);
+
+                if (patient.BirthDate < DateTime.Parse("01/01/1880") ||
+                        patient.BirthDate > DateTime.Now.AddYears(1))
+                {
+                    logger.LogError($"При изменения пациента с id = {id} произошла ошибка: " +
+                        $"Недопустимая дата: {patient.BirthDate}");
+                    ModelState.AddModelError("BirthDate", $"Дата рождения должна быть в промежутке" +
+                        $" от {DateTime.Parse("01/01/1880").ToString("d")} до {DateTime.Now.AddYears(1).ToString("d")}");
+                    return View(patient);
+                }
+
+                var _patient = patientService.GetPatient(id);
                 if (_patient != null)
                 {
-                    if (patient.BirthDate < DateTime.Parse("01/01/1880") ||
-                        patient.BirthDate > DateTime.Now.AddYears(1))
+                    if (patientService.UpdatePatient(patient) == true)
                     {
-                        logger.LogError($"При изменения пациента с id = {id} произошла ошибка: " +
-                            $"Недопустимая дата: {patient.BirthDate}");
-                        ModelState.AddModelError("BirthDate", $"Дата рождения должна быть в промежутке" +
-                            $" от {DateTime.Parse("01/01/1880").ToString("d")} до {DateTime.Now.AddYears(1).ToString("d")}");
-                        return View(patient);
-                    }
-
-                    patient.PensionNumber = Regex.Replace(patient.PensionNumber, "[^0-9]", "");
-                    var pensionCheck = patientContext.Patients
-                        .Where(x => x.PensionNumber == patient.PensionNumber)
-                        .FirstOrDefault();
-                    if (pensionCheck == null || pensionCheck.PatientId == id)
-                    {
-                        patientContext.Entry(_patient).CurrentValues.SetValues(patient);
-                        patientContext.SaveChanges();
                         logger.LogInformation($"Пациент с id = {id} был изменен");
                         return RedirectToAction("Get", "Patient",
                             new { id = patient.PatientId, message = "Пациент успешно изменен" });
@@ -375,12 +360,11 @@ namespace ConsultationsProject.Controllers
         {
             try
             {
-                var patient = patientContext.Patients.Find(id);
+                var patient = patientService.GetPatient(id);
                 if (patient != null)
                 {
                     logger.LogInformation($"Пациент с id = {id} был удален из базы данных");
-                    patientContext.Remove(patient);
-                    patientContext.SaveChanges();
+                    patientService.DeletePatient(id);
                     return Json(new { success = "true", message = "Пациент успешно удален" });
                 }
                 logger.LogError($"При попытке удаления пациент с id = {id} был не найден в базе данных");
