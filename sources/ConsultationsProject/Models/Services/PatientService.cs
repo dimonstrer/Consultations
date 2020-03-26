@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace ConsultationsProject.Models.Services
@@ -17,10 +18,21 @@ namespace ConsultationsProject.Models.Services
             this.patientsContext = patientsContext;
         }
 
-        public void AddPatient(Patient patient)
+        public bool AddPatient(Patient patient)
         {
-            patientsContext.Patients.Add(patient);
-            patientsContext.SaveChanges();
+            patient.PensionNumber = Regex.Replace(patient.PensionNumber, "[^0-9]", "");
+
+            var pensionCheck = patientsContext.Patients
+                        .Where(x => x.PensionNumber == patient.PensionNumber)
+                        .FirstOrDefault();
+
+            if ((pensionCheck == null) || (pensionCheck.PatientId == patient.PatientId))
+            {
+                patientsContext.Patients.Add(patient);
+                patientsContext.SaveChanges();
+                return true;
+            }
+            return false;
         }
 
         public Patient GetPatient(int id)
@@ -43,27 +55,49 @@ namespace ConsultationsProject.Models.Services
             return patientsContext.Patients.Include(x => x.Consultations);
         }
 
-        public void UpdatePatient(Patient patient)
+        public bool UpdatePatient(Patient patient)
         {
-            patientsContext.Update(patient);
-            patientsContext.SaveChanges();
+            patient.PensionNumber = Regex.Replace(patient.PensionNumber, "[^0-9]", "");
+
+            var pensionCheck = patientsContext.Patients
+                        .Where(x => x.PensionNumber == patient.PensionNumber)
+                        .FirstOrDefault();
+
+            if ((pensionCheck == null) || (pensionCheck.PatientId == patient.PatientId))
+            {
+                patientsContext.Entry(pensionCheck).CurrentValues.SetValues(patient);
+                patientsContext.SaveChanges();
+                return true;
+            }
+            return false;
         }
 
         public void DeletePatient(int id)
         {
             var patient = patientsContext.Patients.Find(id);
             if (patient != null)
+            {
                 patientsContext.Patients.Remove(patient);
+                patientsContext.SaveChanges();
+            }
             else
                 throw new ArgumentNullException();
         }
 
 
 
-        public void AddConsultation(Consultation consultation)
+        public bool AddConsultation(Consultation consultation)
         {
-            patientsContext.Consultations.Add(consultation);
-            patientsContext.SaveChanges();
+            var patient = patientsContext.Patients.Find(consultation.PatientId);
+
+            if (patient != null)
+            {
+                patientsContext.Consultations.Add(consultation);
+                patientsContext.SaveChanges();
+                return true;
+            }
+
+            return false;
         }
 
         public Consultation GetConsultationWhere(Expression<Func<Consultation, bool>> expression)
@@ -81,17 +115,33 @@ namespace ConsultationsProject.Models.Services
             return patientsContext.Consultations.Where(x => x.PatientId == patientId);
         }
 
-        public void UpdateConsultation(Consultation consultation)
+        public bool UpdateConsultation(Consultation consultation)
         {
-            patientsContext.Update(consultation);
-            patientsContext.SaveChanges();
+            var patient = patientsContext.Patients.Find(consultation.PatientId);
+
+            if (patient != null)
+            {
+                var prevCons = patientsContext.Consultations.Find(consultation.ConsultationId);
+
+                if (prevCons != null)
+                {
+                    patientsContext.Entry(prevCons).CurrentValues.SetValues(consultation);
+                    patientsContext.SaveChanges();
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public void DeleteConsultation(int id)
         {
             var consultation = patientsContext.Consultations.Find(id);
             if (consultation != null)
+            {
                 patientsContext.Consultations.Remove(consultation);
+                patientsContext.SaveChanges();
+            }
             else
                 throw new ArgumentNullException();
         }
