@@ -86,7 +86,7 @@
         };
         async function deleteHandler(value) {
             if (confirm('Вы действительно хотите удалить пациента?')) {
-                let url = 'patient-management/patients/' + value;
+                let url = 'patients/' + value;
                 let response = await fetch(url, {
                     method: 'DELETE'
                 });
