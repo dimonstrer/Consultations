@@ -11,6 +11,11 @@ namespace ConsultationsProject.Models.DTO
     /// </summary>
     public class PatientDTO
     {
+
+        /// <summary>
+        /// Id пациента в БД (ПК).
+        /// </summary>
+        public int PatientId { get; set; }
         /// <summary>
         /// Имя пациента.
         /// </summary>
@@ -51,5 +56,10 @@ namespace ConsultationsProject.Models.DTO
         [Display(Name = "СНИЛС*")]
         [Required(ErrorMessage = "Не указан СНИЛС пациента")]
         public string PensionNumber { get; set; }
+
+        /// <summary>
+        /// Список консультаций пациента.
+        /// </summary>
+        public List<ConsultationDTO> Consultations { get; set; }
     }
 }

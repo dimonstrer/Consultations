@@ -12,6 +12,11 @@ namespace ConsultationsProject.Models.DTO
     public class ConsultationDTO
     {
         /// <summary>
+        /// ID консультации пациента в БД (ПК).
+        /// </summary>
+        public int ConsultationId { get; set; }
+
+        /// <summary>
         /// День консультации пациента.
         /// </summary>
         [Display(Name = "Дата*")]
