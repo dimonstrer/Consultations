@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using ConsultationsProject.Models;
+using ConsultationsProject.Models.DTO;
 using ConsultationsProject.Models.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,14 +27,21 @@ namespace ConsultationsProject.Controllers
         private readonly IPatientService patientService;
 
         /// <summary>
+        /// Объект маппера.
+        /// </summary>
+        private readonly IMapper mapper;
+
+        /// <summary>
         /// Конструктор контроллера.
         /// </summary>
         /// <param name="patientService">Сервис, ответственный за бизнес логику в работе с пациентами и консультациями.</param>
         /// <param name="logger">Логгер.</param>
-        public PatientsApiController(IPatientService patientService,ILogger<PatientsApiController> logger)
+        /// <param name="mapper">Объект маппера.</param>
+        public PatientsApiController(IPatientService patientService,ILogger<PatientsApiController> logger, IMapper mapper)
         {
             this.patientService = patientService;
             this.logger = logger;
+            this.mapper = mapper;
         }
 
         /// <summary>
@@ -41,11 +50,12 @@ namespace ConsultationsProject.Controllers
         /// <returns>HTTP ответ, содержащий статус код и пациентов.</returns>
         /// <response code="200">Возвращает всех пациентов.</response>
         [HttpGet]
-        public ActionResult<IEnumerable<Patient>> GetAll()
+        public ActionResult<IEnumerable<PatientDTO>> GetAll()
         {
             var patients = patientService.GetPatients().ToList();
+            var patientsDTO = mapper.Map<List<PatientDTO>>(patients);
             logger.LogInformation($"Запрос вернул {patients.Count()} пациентов.");
-            return Ok(patients);
+            return Ok(patientsDTO);
         }
 
         /// <summary>
@@ -56,13 +66,14 @@ namespace ConsultationsProject.Controllers
         /// <response code="200">Возвращает пациента.</response>
         /// <response code="404">Возвращает ошибку.</response>
         [HttpGet("{id}")]
-        public ActionResult<Patient> Get(int id)
+        public ActionResult<PatientDTO> Get(int id)
         {
             var patient = patientService.GetPatient(id);
             if (patient != null)
             {
+                var patientDTO = mapper.Map<PatientDTO>(patient);
                 logger.LogInformation($"Запрос вернул пациента с id = {id}.");
-                return Ok(patient);
+                return Ok(patientDTO);
             }
             logger.LogError($"Пациент с id = {id} не найден в базе данных.");
             return NotFound();
@@ -76,15 +87,16 @@ namespace ConsultationsProject.Controllers
         /// <response code="201">Возвращает ответ сервиса.</response>
         /// <response code="400">Возвращает ответ сервиса.</response>
         [HttpPost]
-        public ActionResult Add(Patient patient)
+        public ActionResult Add(PatientDTO patient)
         {
             if (ModelState.IsValid)
             {
+                var patientDB = mapper.Map<Patient>(patient);
 
-                if (patientService.AddPatient(patient))
+                if (patientService.AddPatient(patientDB))
                 {
-                    logger.LogInformation($"Добавлен новый пациент с id = {patient.PatientId}.");
-                    return StatusCode(201, new { isSuccess = true, ErrorMessage = "", StatusCode = 201, Result = patient.PatientId });
+                    logger.LogInformation($"Добавлен новый пациент с id = {patientDB.PatientId}.");
+                    return StatusCode(201, new { isSuccess = true, ErrorMessage = "", StatusCode = 201, Result = patientDB.PatientId });
                 }
                 else
                 {
@@ -108,7 +120,7 @@ namespace ConsultationsProject.Controllers
         /// <response code="400">Возвращает ответ сервиса.</response>
         /// <response code="404">Возвращает ответ сервиса.</response>
         [HttpPut("{id}")]
-        public ActionResult Edit(int id, Patient patient)
+        public ActionResult Edit(int id, PatientDTO patient)
         {
             if (ModelState.IsValid)
             {
@@ -116,7 +128,9 @@ namespace ConsultationsProject.Controllers
                 if (_patient != null)
                 {
                     patient.PatientId = id;
-                    if (patientService.UpdatePatient(patient))
+
+                    var patientDB = mapper.Map<Patient>(patient);
+                    if (patientService.UpdatePatient(patientDB))
                     {
                         logger.LogInformation($"Изменен пациент с id = {id}.");
                         return Ok(new { isSuccess = true, ErrorMessage = "", StatusCode = 201, Result = id });

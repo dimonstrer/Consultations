@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using AutoMapper;
 using ConsultationsProject.Models;
+using ConsultationsProject.Models.DTO;
 using ConsultationsProject.Models.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -45,16 +47,23 @@ namespace ConsultationsProject.Controllers
         private readonly IPatientService patientService;
 
         /// <summary>
+        /// Объект маппера.
+        /// </summary>
+        private readonly IMapper mapper; 
+
+        /// <summary>
         /// Конструктор контроллера.
         /// </summary>
         /// <param name="logger">Логгер.</param>
         /// <param name="config">Конфигурация.</param>
         /// <param name="patientService">Сервис, ответственный за бизнес логику в работе с пациентами и консультациями.</param>
-        public PatientController(ILogger<PatientController> logger, IConfiguration config, IPatientService patientService)
+        /// <param name="mapper">Объект маппера.</param>
+        public PatientController(ILogger<PatientController> logger, IConfiguration config, IPatientService patientService, IMapper mapper)
         {
             this.logger = logger;
             this.config = config;
             this.patientService = patientService;
+            this.mapper = mapper;
             PatientsPageSize = config.GetValue<int>("PaginationSettings:PatientsPageSize");
             ConsultationsPageSize = config.GetValue<int>("PaginationSettings:ConsultationsPageSize");
         }
@@ -81,7 +90,7 @@ namespace ConsultationsProject.Controllers
         /// Представление главной страницы с сообщением об успешном добавлении пациента.
         /// </returns>
         [HttpPost]
-        public IActionResult Add(Patient patient)
+        public IActionResult Add(PatientDTO patient)
         {
             try
             {
@@ -103,8 +112,10 @@ namespace ConsultationsProject.Controllers
                             $" от {DateTime.Parse("01/01/1880").ToString("d")} до {DateTime.Now.AddYears(1).ToString("d")}");
                         return View(patient);
                     }
-                    
-                    if (patientService.AddPatient(patient) == true)
+
+                    var patientDB = mapper.Map<Patient>(patient);
+
+                    if (patientService.AddPatient(patientDB) == true)
                     {
                         logger.LogInformation($"Добавлен новый пациент в базу данных. СНИЛС: {patient.PensionNumber}.");
                         return RedirectToAction("Index", "Home", new { message = "Пациент успешно добавлен" });
@@ -165,7 +176,8 @@ namespace ConsultationsProject.Controllers
                         .Take(ConsultationsPageSize)
                         .ToList();
 
-                    var result = new PatientViewModel { PageViewModel = pageViewModel, Patient = patient };
+                    var patientDTO = mapper.Map<PatientDTO>(patient);
+                    var result = new PatientViewModel { PageViewModel = pageViewModel, Patient = patientDTO};
                     return View(result);
                 }
                 else
@@ -228,7 +240,9 @@ namespace ConsultationsProject.Controllers
                     .Take(ConsultationsPageSize)
                     .ToList();
 
-                var result = new IndexViewModel { PageViewModel = pageViewModel, Patients = _patients };
+                var patientsDTO = mapper.Map<List<PatientDTO>>(_patients);
+
+                var result = new IndexViewModel { PageViewModel = pageViewModel, Patients = patientsDTO };
 
                 logger.LogInformation($"Поисковой запрос {HttpContext.Request.Query} вернул {count} кол-во пациентов.");
                 return PartialView(result);
@@ -261,8 +275,9 @@ namespace ConsultationsProject.Controllers
                 var patient = patientService.GetPatient(id);
                 if (patient != null)
                 {
+                    var patientDTO = mapper.Map<PatientDTO>(patient);
                     logger.LogInformation($"Пациент с id = {id} был изменен.");
-                    return View(patient);
+                    return View(patientDTO);
                 }
                 logger.LogError($"При попытке изменения пациент с id = {id} был не найден в базе данных");
                 return View("Error",
@@ -293,7 +308,7 @@ namespace ConsultationsProject.Controllers
         /// Представление с информацией о пациенте с сообщением об успешном изменении.
         /// </returns>
         [HttpPost("{id}")]
-        public IActionResult Edit(int id, Patient patient)
+        public IActionResult Edit(int id, PatientDTO patient)
         {
             try
             {
@@ -317,7 +332,9 @@ namespace ConsultationsProject.Controllers
                 var _patient = patientService.GetPatient(id);
                 if (_patient != null)
                 {
-                    if (patientService.UpdatePatient(patient) == true)
+                    var patientDB = mapper.Map<Patient>(patient);
+
+                    if (patientService.UpdatePatient(patientDB) == true)
                     {
                         logger.LogInformation($"Пациент с id = {id} был изменен");
                         return RedirectToAction("Get", "Patient",

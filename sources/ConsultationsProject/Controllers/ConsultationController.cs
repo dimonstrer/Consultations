@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using ConsultationsProject.Models;
+using ConsultationsProject.Models.DTO;
 using ConsultationsProject.Models.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -28,14 +30,21 @@ namespace ConsultationsProject.Controllers
         private readonly IPatientService patientService;
 
         /// <summary>
+        /// Объект маппера.
+        /// </summary>
+        private readonly IMapper mapper;
+
+        /// <summary>
         /// Конструктор контроллера.
         /// </summary>
         /// <param name="logger">Логгер.</param>
         /// <param name="patientService">Сервис, ответственный за бизнес логику в работе с пациентами и консультациями.</param>
-        public ConsultationController(ILogger<ConsultationController> logger, IPatientService patientService)
+        /// <param name="mapper">Объект маппера.</param>
+        public ConsultationController(ILogger<ConsultationController> logger, IPatientService patientService, IMapper mapper)
         {
             this.logger = logger;
             this.patientService = patientService;
+            this.mapper = mapper;
         }
 
         /// <summary>
@@ -90,7 +99,7 @@ namespace ConsultationsProject.Controllers
         /// Представление с информацией о пациенте с сообщением об успешном добавлении консультации.
         /// </returns>
         [HttpPost("consultations")]
-        public IActionResult Add(Consultation consultation)
+        public IActionResult Add(ConsultationDTO consultation)
         {
             try
             {
@@ -117,7 +126,9 @@ namespace ConsultationsProject.Controllers
                     return View(consultation);
                 }
 
-                if (patientService.AddConsultation(consultation))
+                var consultationDB = mapper.Map<Consultation>(consultation);
+
+                if (patientService.AddConsultation(consultationDB))
                 {
                     logger.LogInformation($"Пациенту с id = {consultation.PatientId} была добавлена новая консультация.");
                     return RedirectToAction("Get", "Patient",
@@ -163,7 +174,8 @@ namespace ConsultationsProject.Controllers
                 var consultation = patientService.GetConsultation(id);
                 if (consultation != null)
                 {
-                    return View(consultation);
+                    var consultationDTO = mapper.Map<ConsultationDTO>(consultation);
+                    return View(consultationDTO);
                 }
                 logger.LogError($"При изменении консультации произошла ошибка: " +
                     $"Консультация с id = {id} не найдена в базе данных");
@@ -198,7 +210,7 @@ namespace ConsultationsProject.Controllers
         /// Представление с информацией о пациенте с сообщением об успешном редактировании консультации.
         /// </returns>
         [HttpPost("consultations/{id}")]
-        public IActionResult Edit(int id, Consultation consultation)
+        public IActionResult Edit(int id, ConsultationDTO consultation)
         {
             try
             {
@@ -219,7 +231,9 @@ namespace ConsultationsProject.Controllers
                     return View(consultation);
                 }
 
-                if (patientService.UpdateConsultation(consultation) == true)
+                var consultationDB = mapper.Map<Consultation>(consultation);
+
+                if (patientService.UpdateConsultation(consultationDB) == true)
                 {
                     logger.LogInformation($"У пациента с id = {consultation.PatientId}" +
                         $" была изменена консультация с id = {id}");

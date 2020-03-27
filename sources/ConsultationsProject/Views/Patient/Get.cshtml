@@ -1,4 +1,5 @@
-﻿@model PatientViewModel
+﻿@using ConsultationsProject.Models.DTO
+@model PatientViewModel
 @{
     ViewData["Title"] = "Пациент";
 }
@@ -41,7 +42,7 @@
         <tbody class="consultations">
             @if (Model.Patient.Consultations != null && Model.Patient.Consultations.Count > 0)
             {
-                @foreach (Consultation cons in Model.Patient.Consultations)
+                @foreach (ConsultationDTO cons in Model.Patient.Consultations)
                 {
                     <tr>
                         <td width="15%">@cons.Day.ToString("d MM yyyy")</td>

@@ -8,6 +8,8 @@ using Microsoft.Extensions.Logging;
 using ConsultationsProject.Models;
 using Microsoft.Extensions.Configuration;
 using ConsultationsProject.Models.Interfaces;
+using AutoMapper;
+using ConsultationsProject.Models.DTO;
 
 namespace ConsultationsProject.Controllers
 {
@@ -38,16 +40,23 @@ namespace ConsultationsProject.Controllers
         private readonly IPatientService patientService;
 
         /// <summary>
+        /// Объект маппера.
+        /// </summary>
+        private readonly IMapper mapper;
+
+        /// <summary>
         /// Конструктор контроллера. 
         /// </summary>
         /// <param name="logger">Объект логгера.</param>
         /// <param name="config">Конфигурация.</param>
         /// <param name="patientService">Сервис, ответственный за бизнес логику в работе с пациентами и консультациями.</param>
-        public HomeController(ILogger<HomeController> logger, IConfiguration config, IPatientService patientService)
+        /// <param name="mapper">Объект маппера.</param>
+        public HomeController(ILogger<HomeController> logger, IConfiguration config, IPatientService patientService, IMapper mapper)
         {
             this.logger = logger;
             this.config = config;
             this.patientService = patientService;
+            this.mapper = mapper;
             PatientsPageSize = config.GetValue<int>("PaginationSettings:PatientsPageSize");
         }
 
@@ -77,10 +86,12 @@ namespace ConsultationsProject.Controllers
                     .Take(PatientsPageSize)
                     .ToList();
 
-                IndexViewModel result = new IndexViewModel { PageViewModel = pageViewModel, Patients = patients };
+                var patientsDTO = mapper.Map<List<PatientDTO>>(patients);
+
+                IndexViewModel result = new IndexViewModel { PageViewModel = pageViewModel, Patients = patientsDTO };
                 return View(result);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 logger.LogCritical($"Произошла ошибка при получении списка пациентов в базе данных." +
                     $" Страница: {page}", e);

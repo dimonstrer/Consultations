@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ConsultationsProject.Models.DTO;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ namespace ConsultationsProject.Models
         /// <summary>
         /// Список всех пациентов.
         /// </summary>
-        public IEnumerable<Patient> Patients { get; set; }
+        public IEnumerable<PatientDTO> Patients { get; set; }
 
         /// <summary>
         /// Модель пагинации для данного списка.
