@@ -4,8 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using AutoMapper;
 using ConsultationsProject.Models;
 using ConsultationsProject.Models.Interfaces;
+using ConsultationsProject.Models.MappingProfiles;
 using ConsultationsProject.Models.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -35,9 +37,11 @@ namespace ConsultationsProject
                 apiBehaviorOptions.SuppressModelStateInvalidFilter = true;
             });
             services.AddControllersWithViews();
+
             services.AddDbContext<PatientsContext>(options => 
                 options.UseSqlServer(Configuration.GetConnectionString("PatientsDbConnectionString")));
             services.AddScoped<IPatientService, PatientService>();
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Patients and Consultations API", Version = "v1" });
@@ -46,6 +50,15 @@ namespace ConsultationsProject
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 c.IncludeXmlComments(xmlPath);
             });
+
+            var mappingConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new PatientMappingProfile());
+                mc.AddProfile(new ConsultationMappingProfile());
+            });
+
+            IMapper mapper = mappingConfig.CreateMapper();
+            services.AddSingleton(mapper);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
