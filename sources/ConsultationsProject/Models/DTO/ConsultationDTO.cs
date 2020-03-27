@@ -35,5 +35,10 @@ namespace ConsultationsProject.Models.DTO
         /// </summary>
         [Display(Name = "Симптомы")]
         public string Symptoms { get; set; }
+
+        /// <summary>
+        /// ID пациента в БД (ВК).
+        /// </summary>
+        public int PatientId { get; set; }
     }
 }
