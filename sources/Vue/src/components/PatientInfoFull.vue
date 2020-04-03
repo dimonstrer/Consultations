@@ -10,7 +10,7 @@
                 <dt class="col-sm-3">Пол</dt>
                 <dd class="col-sm-9">{{patient.gender}}</dd>
                 <dt class="col-sm-3">Дата рождения</dt>
-                <dd class="col-sm-9">{{patient.birthDate}}</dd>
+                <dd class="col-sm-9">{{patient.birthDate | formatDateToYMD}}</dd>
                 <dt class="col-sm-3">СНИЛС</dt>
                 <dd class="col-sm-9">{{patient.pensionNumber}}</dd>
             </dl>

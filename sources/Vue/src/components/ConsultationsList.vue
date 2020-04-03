@@ -12,8 +12,8 @@
             </thead>
             <tbody>
             <tr v-for="cons in consultations" :key="cons.consultationId">
-                <td>{{cons.day}}</td>
-                <td>{{cons.time}}</td>
+                <td>{{cons.day | formatDateToYMD}}</td>
+                <td>{{cons.time | formatDateToHH}}</td>
                 <td>{{cons.symptoms}}</td>
             </tr>
             </tbody>
