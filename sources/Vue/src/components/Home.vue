@@ -1,42 +1,20 @@
 <template>
-    <div id="text-center">
+    <div class="text-center">
         <h1 class="display-4">Список пациентов</h1>
-        <table id="patients" class="table table-striped">
-            <tbody>
-                <tr is="patient-info"
-                    v-for="patient in patientsList"
-                    :patient="patient"
-                    :key="patient.PensionNumber">
+        <router-link to="/addPatient" tag="button" class="btn btn-success my-3">Добавить пациента</router-link>
 
-                </tr>
-            </tbody>
-        </table>
+        <input class="form-control" type="text" placeholder="Введите ФИО или СНИЛС">
+
+        <patient-info-table></patient-info-table>
     </div>
 </template>
 
 <script>
-    import PatientInfo from "@/components/PatientInfoTable";
+    import PatientInfoTable from "@/components/PatientInfoTable";
 
     export default  {
-        data() {
-            return {
-                patientsList: []
-            }
-        },
-        created() {
-            this.fetchPatients();
-        },
-        methods: {
-            fetchPatients() {
-                let vm = this;
-                console.log(this)
-                fetch("https://localhost:44373/api/patient-management/patients")
-                    .then(response=>response.json())
-                    .then(data =>vm.patientsList=data);
-            }
-        },
         components: {
-            PatientInfo
+            PatientInfoTable
         }
     }
 </script>
