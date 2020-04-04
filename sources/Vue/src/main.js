@@ -3,8 +3,10 @@ import VueRouter from "vue-router";
 import router from "@/router";
 import App from "@/App";
 import moment from "moment";
+import Vuelidate from "vuelidate/src";
 
 Vue.use(VueRouter);
+Vue.use(Vuelidate)
 
 Vue.filter('formatDateToYMD', function (value) {
   return moment(value).format('MM/DD/YYYY')
