@@ -1,7 +1,7 @@
 <template>
     <div>
-        <button @click="editPatient">Редактировать</button>
-        <button @click="deletePatient">Удалить</button>
+        <router-link tag="button" class="btn btn-success" :to="{name:'editPatient', params:{id : patient.patientId}}">Редактировать</router-link>
+        <button class="btn btn-danger" @click="deletePatient">Удалить</button>
 
         <div class="text-left mt-4">
             <dl class="row">
@@ -45,9 +45,9 @@
             this.fetchPatient();
         },
         methods: {
-            fetchPatient(){
-                var vm = this;
-                fetch("https://localhost:44373/api/patient-management/patients/"+this.id)
+            async fetchPatient(){
+                let vm = this;
+                await fetch("https://localhost:44373/api/patient-management/patients/"+this.id)
                     .then(response=>response.json())
                     .then(data =>vm.patient=data);
             },

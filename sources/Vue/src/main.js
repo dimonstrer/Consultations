@@ -9,7 +9,7 @@ Vue.use(VueRouter);
 Vue.use(Vuelidate)
 
 Vue.filter('formatDateToYMD', function (value) {
-  return moment(value).format('MM/DD/YYYY')
+  return moment(value).format('DD/MM/YYYY')
 });
 Vue.filter('formatDateToHH', function (value) {
   return moment(value).format('HH:mm')
