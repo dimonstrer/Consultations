@@ -77,15 +77,17 @@
 
             <div class="form-group">
                 <label for="pensionNumber">СНИЛС*</label>
-                <input
+                <masked-input
+                        :mask="[/\d/,/\d/,/\d/,'-',/\d/,/\d/,/\d/,'-',/\d/,/\d/,/\d/,' ',/\d/,/\d/]"
                         class="form-control"
                         :class="{'is-invalid': $v.patient.pensionNumber.$error}"
                         type="text"
                         id="pensionNumber"
                         v-model="patient.pensionNumber"
                         @blur="$v.patient.pensionNumber.$touch()"
-                >
+                ></masked-input>
                 <div v-if="!$v.patient.pensionNumber.required" class="invalid-feedback">Не указан СНИЛС пациента</div>
+                <div v-if="!$v.patient.pensionNumber.isValidPension" class="invalid-feedback">Неверно введен СНИЛС</div>
             </div>
 
             <input class="btn btn-success" type="submit" value="Создать">
@@ -98,6 +100,7 @@
     import DatePicker from 'vue2-datepicker';
     import 'vue2-datepicker/index.css';
     import 'vue2-datepicker/locale/ru'
+    import MaskedInput from 'vue-text-mask'
 
     export default {
         data() {
@@ -138,10 +141,19 @@
                         alert(result.errorMessage);
                     }
                 }
+            },
+            checkHash(sum, checkSum) {
+                if (sum < 100)
+                    return sum == +checkSum;
+                if (sum == 100 || sum == 101)
+                    return checkSum == "00";
+                if (sum > 100)
+                    return this.checkHash(sum % 101, checkSum);
             }
         },
         components: {
-          DatePicker
+            DatePicker,
+            MaskedInput
         },
         validations: {
             patient: {
@@ -158,7 +170,15 @@
                     required
                 },
                 pensionNumber: {
-                    required
+                    required,
+                    isValidPension(pension) {
+                        let parsed = pension.split('-').join('').split(' ').join('');
+                        let checkSum = parsed.slice(9, 11);
+                        let sum = 0;
+                        for (let i = 0, j = 9; i < parsed.length - 2; i++ , j--)
+                            sum += +parsed[i] * j;
+                        return this.checkHash(sum, checkSum);
+                    }
                 }
             }
         }
