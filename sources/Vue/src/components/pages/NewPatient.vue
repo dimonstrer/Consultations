@@ -1,7 +1,7 @@
 <template>
     <div>
         <h3 class="text-center">Новый пациент</h3>
-        <form >
+        <form @submit.prevent="validateBeforeSubmit">
             <div class="form-group">
                 <label for="firstName">Имя*</label>
                 <input
@@ -14,6 +14,7 @@
                 >
                 <div v-if="!$v.patient.firstName.required" class="invalid-feedback">Не указано имя пациента</div>
             </div>
+
             <div class="form-group">
                 <label for="lastName">Фамилия*</label>
                 <input
@@ -24,8 +25,10 @@
                         v-model="patient.lastName"
                         @blur="$v.patient.lastName.$touch()"
                 >
-                <div v-if="!$v.patient.lastName.required" class="invalid-feedback">Не указана фамилия пациента</div>
+                <div v-if="!$v.patient.lastName.required"
+                     class="invalid-feedback">Не указана фамилия пациента</div>
             </div>
+
             <div class="form-group">
                 <label for="patronymic">Отчество (если присутствует)</label>
                 <input
@@ -36,18 +39,26 @@
                         @blur="$v.patient.patronymic.$touch()"
                 >
             </div>
+
             <div class="form-group">
                 <label for="birthDate">Дата рождения*</label>
-                <input
-                        class="form-control"
-                        :class="{'is-invalid': $v.patient.birthDate.$error}"
-                        type="text"
-                        id="birthDate"
-                        v-model="patient.birthDate"
-                        @blur="$v.patient.birthDate.$touch()"
-                >
-                <div v-if="!$v.patient.birthDate.required" class="invalid-feedback">Не указана дата рождения пациента</div>
+                <br>
+
+                <date-picker
+                    v-model="patient.birthDate"
+                    format="DD/MM/YYYY"
+                    :input-class="['form-control',{'is-invalid': $v.patient.birthDate.$error}]"
+                    id="birthDate"
+                    @blur="$v.patient.birthDate.$touch()"
+                ></date-picker>
+                <span :class="{'is-invalid': $v.patient.birthDate.$error}"></span>
+                <div
+                        v-if="!$v.patient.birthDate.required"
+                        class="invalid-feedback"
+                        :style="[{'display' : dateErrorState}]"
+                >Не указана дата рождения пациента</div>
             </div>
+
             <div class="form-group">
                 <label for="gender">Пол*</label>
                 <select
@@ -55,14 +66,15 @@
                         :class="{'is-invalid': $v.patient.gender.$error}"
                         type="text"
                         id="gender"
-                        :disabled="isDisabled"
                         v-model="patient.gender"
                         @blur="$v.patient.gender.$touch()"
                 >
+                    <option selected="selected" disabled="disabled">Выберите пол</option>
                     <option v-for="opt in genderOptions" :key="opt">{{opt}}</option>
                 </select>
                 <div v-if="!$v.patient.gender.required" class="invalid-feedback">Не указан пол пациента</div>
             </div>
+
             <div class="form-group">
                 <label for="pensionNumber">СНИЛС*</label>
                 <input
@@ -78,12 +90,14 @@
 
             <input class="btn btn-success" type="submit" value="Создать">
         </form>
-
     </div>
 </template>
 
 <script>
     import {required} from "vuelidate/lib/validators";
+    import DatePicker from 'vue2-datepicker';
+    import 'vue2-datepicker/index.css';
+    import 'vue2-datepicker/locale/ru'
 
     export default {
         data() {
@@ -92,12 +106,42 @@
                     firstName: '',
                     lastName: '',
                     patronymic: '',
-                    birthDate: Date(),
+                    birthDate: {},
                     gender: '',
                     pensionNumber: ''
                 },
                 genderOptions: ['Мужской','Женский']
             }
+        },
+        computed: {
+            dateErrorState() {
+                return this.$v.patient.birthDate.$error ? 'block' : 'none';
+            }
+        },
+        methods:{
+            async validateBeforeSubmit() {
+                this.$v.$touch()
+                if (!this.$v.$invalid){
+                    let response = await fetch('https://localhost:44373/api/patient-management/patients/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json;charset=utf-8'
+                        },
+                        body: JSON.stringify(this.patient)
+                    });
+                    let result = await response.json();
+                    if(result.ok) {
+                        alert('Пациент успешно добавлен');
+                        this.$router.push('home')
+                    }
+                    else {
+                        alert(result.errorMessage);
+                    }
+                }
+            }
+        },
+        components: {
+          DatePicker
         },
         validations: {
             patient: {
