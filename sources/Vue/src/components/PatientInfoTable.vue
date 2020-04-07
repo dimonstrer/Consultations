@@ -13,8 +13,8 @@
         <tr is="patient-info-table-row"
             v-for="patient in patientsList"
             :patient="patient"
-            :key="patient.PensionNumber">
-
+            :key="patient.PensionNumber"
+            @deletePatient="deletePatient">
         </tr>
         </tbody>
     </table>
@@ -32,13 +32,23 @@
             this.fetchPatients();
         },
         methods: {
-            fetchPatients() {
+            async fetchPatients() {
                 let vm = this;
                 console.log(this)
-                fetch("https://localhost:44373/api/patient-management/patients")
+                await fetch("https://localhost:44373/api/patient-management/patients")
                     .then(response=>response.json())
                     .then(data =>vm.patientsList=data);
-            }
+            },
+            async deletePatient(id){
+                let response = await fetch('https://localhost:44373/api/patient-management/patients/'+id, {
+                    method: 'DELETE'});
+                if(response.ok){
+                    alert('Пациент успешно удален');
+                    await this.fetchPatients();
+                }
+                else
+                    alert('Произошла ошибка при удалении пациента')
+            },
         },
         components: {
             PatientInfoTableRow

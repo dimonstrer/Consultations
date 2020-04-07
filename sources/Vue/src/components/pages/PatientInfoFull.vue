@@ -58,8 +58,15 @@
                 console.dir(this.patient)
                 alert('edit');
             },
-            deletePatient(){
-                alert('delete');
+            async deletePatient(){
+                let response = await fetch('https://localhost:44373/api/patient-management/patients/'+this.id, {
+                        method: 'DELETE'});
+                if(response.ok){
+                    alert('Пациент успешно удален');
+                    this.$router.push({name: 'home'});
+                }
+                else
+                    alert('Произошла ошибка при удалении пациента')
             },
             async addedConsultation(){
                 this.newConsultation = false;
