@@ -15,19 +15,22 @@
                 <dd class="col-sm-9">{{patient.pensionNumber}}</dd>
             </dl>
         </div>
-
+        <button class="btn btn-success" @click="newConsultation = true">Добавить новую консультацию</button>
+        <new-consultation-modal :id="id" v-if="newConsultation" @add="addedConsultation" @close="newConsultation=false"></new-consultation-modal>
         <consultations-list :consultations="patient.consultations"></consultations-list>
     </div>
 </template>
 
 <script>
     import ConsultationsList from "@/components/ConsultationsList";
+    import NewConsultationModal from "@/components/pages/NewConsultationModal";
     export default {
-        components: {ConsultationsList},
+        components: {ConsultationsList, NewConsultationModal},
         data() {
             return {
                 id: this.$route.params['id'],
-                patient: {}
+                patient: {},
+                newConsultation: false
             }
         },
         computed: {
@@ -57,6 +60,13 @@
             },
             deletePatient(){
                 alert('delete');
+            },
+            async addedConsultation(){
+                this.newConsultation = false;
+                let vm = this;
+                await fetch("https://localhost:44373/api/consultation-management/patient/consultations/"+this.id)
+                    .then(response=>response.json())
+                    .then(data =>vm.patient.consultations=data);
             }
         }
     }

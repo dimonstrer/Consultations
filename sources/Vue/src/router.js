@@ -3,6 +3,7 @@ import Home from "@/components/pages/Home";
 import PatientInfoFull from "@/components/pages/PatientInfoFull";
 import NewPatient from "@/components/pages/NewPatient";
 import EditPatient from "@/components/pages/EditPatient";
+import NewConsultationModal from "@/components/pages/NewConsultationModal";
 
 export default new VueRouter({
     routes: [
@@ -19,7 +20,14 @@ export default new VueRouter({
         {
             path: '/patients/:id',
             name: 'patientInfo',
-            component: PatientInfoFull
+            component: PatientInfoFull,
+            children: [
+                {
+                    path: 'addConsultation',
+                    name: 'addConsultation',
+                    component: NewConsultationModal
+                }
+            ]
         },
         {
             path: '/editPatient/:id',
