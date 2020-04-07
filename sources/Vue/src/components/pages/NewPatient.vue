@@ -133,9 +133,9 @@
                         body: JSON.stringify(this.patient)
                     });
                     let result = await response.json();
-                    if(result.ok) {
+                    if(result.isSuccess) {
                         alert('Пациент успешно добавлен');
-                        this.$router.push('home')
+                        this.$router.push({name: 'home'})
                     }
                     else {
                         alert(result.errorMessage);
