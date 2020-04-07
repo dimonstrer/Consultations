@@ -15,7 +15,9 @@
                 <dd class="col-sm-9">{{patient.pensionNumber}}</dd>
             </dl>
         </div>
-        <button class="btn btn-success" @click="newConsultation = true">Добавить новую консультацию</button>
+        <div class="text-center">
+        <button class="btn btn-success my-3" @click="newConsultation = true">Добавить новую консультацию</button>
+        </div>
         <new-consultation-modal :id="id" v-if="newConsultation" @add="addedConsultation" @close="newConsultation=false"></new-consultation-modal>
         <consultations-list :consultations="patient.consultations"></consultations-list>
     </div>
