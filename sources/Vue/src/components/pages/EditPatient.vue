@@ -160,16 +160,16 @@
                 this.$v.$touch()
                 if (!this.$v.$invalid){
                     let response = await fetch('https://localhost:44373/api/patient-management/patients/'+this.id, {
-                        method: 'POST',
+                        method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json;charset=utf-8'
                         },
                         body: JSON.stringify(this.patient)
                     });
                     let result = await response.json();
-                    if(result.ok) {
+                    if(result.isSuccess) {
                         alert('Пациент успешно изменен');
-                        this.$router.push('home')
+                        this.$router.push({ name: 'patientInfo', params: {id: this.id}})
                     }
                     else {
                         alert(result.errorMessage);
