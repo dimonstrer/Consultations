@@ -145,7 +145,7 @@
                 await fetch("https://localhost:44373/api/patient-management/patients/" + this.id)
                     .then(response => response.json())
                     .then(data => vm.patient = data);
-                this.patient.birthDate = new Date(this.patient.birthDate);
+                this.patient.birthDate = new Date(this.patient.birthDate+'Z');
                 this.disabled = false;
             },
             checkHash(sum, checkSum) {
@@ -159,6 +159,8 @@
             async validateBeforeSubmit() {
                 this.$v.$touch()
                 if (!this.$v.$invalid){
+                    this.patient.birthDate = moment(this.patient.birthDate, moment.ISO_8601);
+                    alert(this.patient.birthDate)
                     let response = await fetch('https://localhost:44373/api/patient-management/patients/'+this.id, {
                         method: 'PUT',
                         headers: {
