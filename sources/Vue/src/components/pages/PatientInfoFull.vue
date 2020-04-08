@@ -70,12 +70,16 @@
                 else
                     alert('Произошла ошибка при удалении пациента')
             },
-            async addedConsultation(){
-                this.newConsultation = false;
+            async getConsultations(){
                 let vm = this;
                 await fetch("https://localhost:44373/api/consultation-management/patient/consultations/"+this.id)
                     .then(response=>response.json())
                     .then(data =>vm.patient.consultations=data);
+            },
+            async addedConsultation(){
+                this.newConsultation = false;
+                await this.getConsultations();
+            },
             }
         }
     }
