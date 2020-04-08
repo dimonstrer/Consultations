@@ -54,7 +54,23 @@ namespace ConsultationsProject.Models.Services
         }
 
         /// <summary>
-        /// Метод, возвращающий пациента по id.
+        /// Метод, возвращающий пациента по id с его консультациями.
+        /// </summary>
+        /// <param name="id">Уникальный id пациента.</param>
+        /// <returns>
+        /// Возвращает сущность найденного пациента.
+        /// NULL, если пациент не найден.
+        /// </returns>
+        public Patient GetPatientWithConsultations(int id)
+        {
+            return patientsContext.Patients
+                .Include(x => x.Consultations)
+                .Where(x => x.PatientId == id)
+                .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Метод, возвращающий пациента по id без его консультаций.
         /// </summary>
         /// <param name="id">Уникальный id пациента.</param>
         /// <returns>
@@ -64,7 +80,6 @@ namespace ConsultationsProject.Models.Services
         public Patient GetPatient(int id)
         {
             return patientsContext.Patients
-                .Include(x => x.Consultations)
                 .Where(x => x.PatientId == id)
                 .FirstOrDefault();
         }

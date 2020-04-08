@@ -11,6 +11,7 @@ namespace ConsultationsProject.Models.Interfaces
         public IQueryable<Patient> GetPatients();
         public IQueryable<Patient> GetPatientsWhere(Expression<Func<Patient, bool>> expression);
         public Patient GetPatient(int id);
+        public Patient GetPatientWithConsultations(int id);
         public bool AddPatient(Patient patient);
         public bool UpdatePatient(Patient patient);
         public void DeletePatient(int id);
