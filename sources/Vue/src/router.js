@@ -8,11 +8,6 @@ import NewConsultationModal from "@/components/pages/NewConsultationModal";
 export default new VueRouter({
     routes: [
         {
-            path: '/',
-            name: 'home',
-            component: Home
-        },
-        {
             path: '/addPatient',
             name: 'addPatient',
             component: NewPatient
@@ -33,6 +28,11 @@ export default new VueRouter({
             path: '/editPatient/:id',
             name: 'editPatient',
             component: EditPatient
+        },
+        {
+            path: '/:page?',
+            name: 'home',
+            component: Home
         }
     ],
     mode: 'history'

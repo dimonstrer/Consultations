@@ -8,6 +8,7 @@ using ConsultationsProject.Models.DTO;
 using ConsultationsProject.Models.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace ConsultationsProject.Controllers
@@ -32,16 +33,23 @@ namespace ConsultationsProject.Controllers
         private readonly IMapper mapper;
 
         /// <summary>
+        /// Количество пациентов на страницу.
+        /// </summary>
+        private readonly int PatientsPageSize;
+
+        /// <summary>
         /// Конструктор контроллера.
         /// </summary>
         /// <param name="patientService">Сервис, ответственный за бизнес логику в работе с пациентами и консультациями.</param>
         /// <param name="logger">Логгер.</param>
         /// <param name="mapper">Объект маппера.</param>
-        public PatientsApiController(IPatientService patientService,ILogger<PatientsApiController> logger, IMapper mapper)
+        /// <param name="config">Конфигурация.</param>
+        public PatientsApiController(IPatientService patientService,ILogger<PatientsApiController> logger, IMapper mapper, IConfiguration config)
         {
             this.patientService = patientService;
             this.logger = logger;
-            this.mapper = mapper;
+            this.mapper = mapper; 
+            PatientsPageSize = config.GetValue<int>("PaginationSettings:PatientsPageSize");
         }
 
         /// <summary>
@@ -49,13 +57,38 @@ namespace ConsultationsProject.Controllers
         /// </summary>
         /// <returns>HTTP ответ, содержащий статус код и пациентов.</returns>
         /// <response code="200">Возвращает всех пациентов.</response>
-        [HttpGet]
+        /*[HttpGet]
         public ActionResult<IEnumerable<PatientDTO>> GetAll()
         {
             var patients = patientService.GetPatients().ToList();
             var patientsDTO = mapper.Map<List<PatientDTO>>(patients);
             logger.LogInformation($"Запрос вернул {patients.Count()} пациентов.");
             return Ok(patientsDTO);
+        }*/
+
+        /// <summary>
+        /// Метод, возвращающий всех пациентов из БД постранично.
+        /// </summary>
+        /// <returns>HTTP ответ, содержащий статус код и пациентов.</returns>
+        /// <response code="200">Возвращает всех пациентов.</response>
+        [HttpGet]
+        public ActionResult<IEnumerable<PatientDTO>> GetAllPaged(int page=1)
+        {
+            var count = patientService.GetPatients().Count();
+            PageViewModel pageViewModel = new PageViewModel(count, page, PatientsPageSize);
+            if (page <= 0 || page > pageViewModel.TotalPages)
+                page = 1;
+
+            var patients = patientService.GetPatients()
+                .Skip((page - 1) * PatientsPageSize)
+                .Take(PatientsPageSize)
+                .ToList();
+            var patientsDTO = mapper.Map<List<PatientDTO>>(patients);
+
+            IndexViewModel result = new IndexViewModel { PageViewModel = pageViewModel, Patients = patientsDTO };
+
+            logger.LogInformation($"Запрос вернул {patients.Count()} пациентов на странице = {page}.");
+            return Ok(result);
         }
 
         /// <summary>
