@@ -19,7 +19,10 @@
         <button class="btn btn-success my-3" @click="newConsultation = true">Добавить новую консультацию</button>
         </div>
         <new-consultation-modal :id="id" v-if="newConsultation" @add="addedConsultation" @close="newConsultation=false"></new-consultation-modal>
-        <consultations-list :consultations="patient.consultations"></consultations-list>
+        <consultations-list
+                :consultations="patient.consultations"
+                @deleteConsultation="deleteConsultation"
+        ></consultations-list>
     </div>
 </template>
 
@@ -80,6 +83,15 @@
                 this.newConsultation = false;
                 await this.getConsultations();
             },
+            async deleteConsultation(id){
+                let response = await fetch('https://localhost:44373/api/consultation-management/consultations/'+id, {
+                    method: 'DELETE'});
+                if(response.ok){
+                    alert('Консультация успешно удалена');
+                    await this.getConsultations();
+                }
+                else
+                    alert('Произошла ошибка при удалении консультации')
             }
         }
     }
