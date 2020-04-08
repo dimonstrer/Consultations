@@ -16,9 +16,9 @@
             </dl>
         </div>
         <div class="text-center">
-        <button class="btn btn-success my-3" @click="newConsultation = true">Добавить новую консультацию</button>
+        <button class="btn btn-success my-3" @click="isNewConsultation = true">Добавить новую консультацию</button>
         </div>
-        <new-consultation-modal :id="id" v-if="newConsultation" @add="addedConsultation" @close="newConsultation=false"></new-consultation-modal>
+        <new-consultation-modal :id="id" v-if="isNewConsultation" @add="addedConsultation" @close="isNewConsultation=false"></new-consultation-modal>
         <edit-consultation-modal
                 v-if="isEditConsultation"
                 :consultation="consultationToEdit"
@@ -43,7 +43,7 @@
             return {
                 id: this.$route.params['id'],
                 patient: {},
-                newConsultation: false
+                isNewConsultation: false,
                 isEditConsultation: false,
                 consultationToEdit: {}
             }
@@ -90,7 +90,7 @@
                     .then(data =>vm.patient.consultations=data);
             },
             async addedConsultation(){
-                this.newConsultation = false;
+                this.isNewConsultation = false;
                 await this.getConsultations();
             },
             async deleteConsultation(id){
