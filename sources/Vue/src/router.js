@@ -13,7 +13,7 @@ export default new VueRouter({
             component: NewPatient
         },
         {
-            path: '/patients/:id',
+            path: '/patients/:id/:page?',
             name: 'patientInfo',
             component: PatientInfoFull,
             children: [

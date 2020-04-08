@@ -38,18 +38,24 @@ namespace ConsultationsProject.Controllers
         private readonly int PatientsPageSize;
 
         /// <summary>
+        /// Количество консультаций на страницу у пациента.
+        /// </summary>
+        private readonly int ConsultationsPageSize;
+
+        /// <summary>
         /// Конструктор контроллера.
         /// </summary>
         /// <param name="patientService">Сервис, ответственный за бизнес логику в работе с пациентами и консультациями.</param>
         /// <param name="logger">Логгер.</param>
         /// <param name="mapper">Объект маппера.</param>
         /// <param name="config">Конфигурация.</param>
-        public PatientsApiController(IPatientService patientService,ILogger<PatientsApiController> logger, IMapper mapper, IConfiguration config)
+        public PatientsApiController(IPatientService patientService, ILogger<PatientsApiController> logger, IMapper mapper, IConfiguration config)
         {
             this.patientService = patientService;
             this.logger = logger;
-            this.mapper = mapper; 
+            this.mapper = mapper;
             PatientsPageSize = config.GetValue<int>("PaginationSettings:PatientsPageSize");
+            ConsultationsPageSize = config.GetValue<int>("PaginationSettings:ConsultationsPageSize");
         }
 
         /// <summary>
@@ -72,7 +78,7 @@ namespace ConsultationsProject.Controllers
         /// <returns>HTTP ответ, содержащий статус код и пациентов.</returns>
         /// <response code="200">Возвращает всех пациентов.</response>
         [HttpGet]
-        public ActionResult<IEnumerable<PatientDTO>> GetAllPaged(int page=1)
+        public ActionResult<IEnumerable<PatientDTO>> GetAllPaged(int page = 1)
         {
             var count = patientService.GetPatients().Count();
             PageViewModel pageViewModel = new PageViewModel(count, page, PatientsPageSize);
@@ -98,15 +104,30 @@ namespace ConsultationsProject.Controllers
         /// <returns>HTTP ответ, содержащий статус код и пациента, или только статус код.</returns>
         /// <response code="200">Возвращает пациента.</response>
         /// <response code="404">Возвращает ошибку.</response>
+        /// <param name="page">Текущая страница списка консультаций.</param>
         [HttpGet("{id}")]
-        public ActionResult<PatientDTO> Get(int id)
+        public ActionResult<PatientDTO> Get(int id, int page = 1)
         {
             var patient = patientService.GetPatient(id);
             if (patient != null)
             {
+                var count = patientService.GetConsultations(id).Count();
+                var pageViewModel = new PageViewModel(count, page, ConsultationsPageSize);
+
+                if (page <= 0 || page > pageViewModel.TotalPages)
+                    page = 1;
+
+                patient.Consultations = patientService.GetConsultations(id)
+                    .Where(x => x.PatientId == id)
+                    .Skip((page - 1) * ConsultationsPageSize)
+                    .Take(ConsultationsPageSize)
+                    .ToList();
+
                 var patientDTO = mapper.Map<PatientDTO>(patient);
+
+                var result = new PatientViewModel { PageViewModel = pageViewModel, Patient = patientDTO };
                 logger.LogInformation($"Запрос вернул пациента с id = {id}.");
-                return Ok(patientDTO);
+                return Ok(result);
             }
             logger.LogError($"Пациент с id = {id} не найден в базе данных.");
             return NotFound();
@@ -135,8 +156,14 @@ namespace ConsultationsProject.Controllers
                 {
                     logger.LogError($"При добавлении нового пациента " +
                             $"обнаружен пациент с идентичным СНИЛС = {patient.PensionNumber}.");
-                    return BadRequest(new { isSucces = false, ErrorMessage = "При добавлении нового пациента " +
-                            $"обнаружен пациент с идентичным СНИЛС = {patient.PensionNumber}.", StatusCode = 400, Result = "" });
+                    return BadRequest(new
+                    {
+                        isSucces = false,
+                        ErrorMessage = "При добавлении нового пациента " +
+                            $"обнаружен пациент с идентичным СНИЛС = {patient.PensionNumber}.",
+                        StatusCode = 400,
+                        Result = ""
+                    });
                 }
             }
             logger.LogError("При добавлении нового пациента данные не были получены от клиента, или они не прошли валидацию.");

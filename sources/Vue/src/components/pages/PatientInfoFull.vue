@@ -1,6 +1,6 @@
 <template>
     <div>
-        <router-link tag="button" class="btn btn-success" :to="{name:'editPatient', params:{id : patient.patientId}}">Редактировать</router-link>
+        <router-link tag="button" class="btn btn-success" :to="{name:'editPatient', params:{id : pageInfo.patient.patientId}}">Редактировать</router-link>
         <button class="btn btn-danger" @click="deletePatient">Удалить</button>
 
         <div class="text-left mt-4">
@@ -8,11 +8,11 @@
                 <dt class="col-sm-3">ФИО</dt>
                 <dd class="col-sm-9">{{FIO}}</dd>
                 <dt class="col-sm-3">Пол</dt>
-                <dd class="col-sm-9">{{patient.gender}}</dd>
+                <dd class="col-sm-9">{{pageInfo.patient.gender}}</dd>
                 <dt class="col-sm-3">Дата рождения</dt>
-                <dd class="col-sm-9">{{patient.birthDate | formatDateToYMD}}</dd>
+                <dd class="col-sm-9">{{pageInfo.patient.birthDate | formatDateToYMD}}</dd>
                 <dt class="col-sm-3">СНИЛС</dt>
-                <dd class="col-sm-9">{{patient.pensionNumber}}</dd>
+                <dd class="col-sm-9">{{pageInfo.patient.pensionNumber}}</dd>
             </dl>
         </div>
         <div class="text-center">
@@ -26,10 +26,25 @@
                 @close="isEditConsultation=false"
         ></edit-consultation-modal>
         <consultations-list
-                :consultations="patient.consultations"
+                :consultations="pageInfo.patient.consultations"
                 @deleteConsultation="deleteConsultation"
                 @editConsultation="editConsultation"
         ></consultations-list>
+
+        <div class="text-center">
+            <router-link
+                    v-if="pageInfo.pageViewModel.hasPreviousPage"
+                    tag="button"
+                    class="btn btn-outline-dark"
+                    :to="{name:'patientInfo', params:{id: pageInfo.patient.patientId, page : pageInfo.pageViewModel.pageNumber-1}}"
+            >Назад</router-link>
+            <router-link
+                    v-if="pageInfo.pageViewModel.hasNextPage"
+                    tag="button"
+                    class="btn btn-outline-dark"
+                    :to="{name:'patientInfo', params:{id: pageInfo.patient.patientId, page : pageInfo.pageViewModel.pageNumber+1}}"
+            >Вперед</router-link>
+        </div>
     </div>
 </template>
 
@@ -42,36 +57,41 @@
         data() {
             return {
                 id: this.$route.params['id'],
-                patient: {},
+                pageInfo: {
+                    patient: {},
+                    pageViewModel: {}
+                },
                 isNewConsultation: false,
                 isEditConsultation: false,
-                consultationToEdit: {}
+                consultationToEdit: {},
+                page: Number
             }
         },
         computed: {
             FIO: function(){
-                return (this.patient.firstName+' '+this.patient.lastName +
-                    (this.patient.patronymic!=null ?' ' + this.patient.patronymic :""))
+                return (this.pageInfo.patient.firstName+' '+this.pageInfo.patient.lastName +
+                    (this.pageInfo.patient.patronymic!=null ?' ' + this.pageInfo.patient.patronymic :""))
             }
         },
         watch: {
             $route (toR, fromR){
                 this.id = toR.params['id'];
+                this.page = toR.params['page'];
             }
         },
         created(){
             this.fetchPatient();
         },
+        updated(){
+            alert('UPDATED')
+            this.fetchPatient()
+        },
         methods: {
             async fetchPatient(){
                 let vm = this;
-                await fetch("https://localhost:44373/api/patient-management/patients/"+this.id)
+                await fetch("https://localhost:44373/api/patient-management/patients/"+this.id+'?page='+this.page)
                     .then(response=>response.json())
-                    .then(data =>vm.patient=data);
-            },
-            editPatient(){
-                console.dir(this.patient)
-                alert('edit');
+                    .then(data =>vm.pageInfo=data);
             },
             async deletePatient(){
                 let response = await fetch('https://localhost:44373/api/patient-management/patients/'+this.id, {
@@ -87,7 +107,7 @@
                 let vm = this;
                 await fetch("https://localhost:44373/api/consultation-management/patient/consultations/"+this.id)
                     .then(response=>response.json())
-                    .then(data =>vm.patient.consultations=data);
+                    .then(data =>vm.pageInfo.patient.consultations=data);
             },
             async addedConsultation(){
                 this.isNewConsultation = false;
