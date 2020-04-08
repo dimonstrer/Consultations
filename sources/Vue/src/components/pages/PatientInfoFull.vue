@@ -19,9 +19,16 @@
         <button class="btn btn-success my-3" @click="newConsultation = true">Добавить новую консультацию</button>
         </div>
         <new-consultation-modal :id="id" v-if="newConsultation" @add="addedConsultation" @close="newConsultation=false"></new-consultation-modal>
+        <edit-consultation-modal
+                v-if="isEditConsultation"
+                :consultation="consultationToEdit"
+                @edited="editedConsultation"
+                @close="isEditConsultation=false"
+        ></edit-consultation-modal>
         <consultations-list
                 :consultations="patient.consultations"
                 @deleteConsultation="deleteConsultation"
+                @editConsultation="editConsultation"
         ></consultations-list>
     </div>
 </template>
@@ -29,13 +36,16 @@
 <script>
     import ConsultationsList from "@/components/ConsultationsList";
     import NewConsultationModal from "@/components/pages/NewConsultationModal";
+    import EditConsultationModal from "@/components/pages/EditConsultationModal";
     export default {
-        components: {ConsultationsList, NewConsultationModal},
+        components: {ConsultationsList, NewConsultationModal, EditConsultationModal},
         data() {
             return {
                 id: this.$route.params['id'],
                 patient: {},
                 newConsultation: false
+                isEditConsultation: false,
+                consultationToEdit: {}
             }
         },
         computed: {
@@ -92,6 +102,14 @@
                 }
                 else
                     alert('Произошла ошибка при удалении консультации')
+            },
+            editConsultation(consultation){
+                this.isEditConsultation = true;
+                this.consultationToEdit = consultation;
+            },
+            async editedConsultation(){
+                this.isEditConsultation = false;
+                await this.getConsultations();
             }
         }
     }
