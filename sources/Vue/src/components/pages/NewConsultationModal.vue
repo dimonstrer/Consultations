@@ -21,6 +21,11 @@
                                     class="invalid-feedback"
                                     :style="[{'display' : dateErrorState}]"
                             >Не указана дата консультации</div>
+                            <div
+                                    v-if="!$v.consultation.day.between"
+                                    class="invalid-feedback"
+                                    :style="[{'display' : dateErrorState}]"
+                            >Дата консультации должна быть в диапазоне от 01.01.1900 до {{currentDate}}</div>
                         </div>
 
                         <div class="form-group">
@@ -59,8 +64,9 @@
 </template>
 
 <script>
-    import {required} from "vuelidate/lib/validators";
+    import {between, required} from "vuelidate/lib/validators";
     import DatePicker from "vue2-datepicker";
+    import moment from "moment";
     export default {
         props: ['id'],
         data(){
@@ -70,7 +76,8 @@
                     day: {},
                     time: '',
                     symptoms: ''
-                }
+                },
+                currentDate: moment(new Date()).format('DD.MM.YYYY')
             }
         },
         watch: {
@@ -111,7 +118,8 @@
         validations: {
             consultation: {
                 day: {
-                    required
+                    required,
+                    between: between(new Date().setFullYear(1899,11,31), new Date())
                 },
                 time: {
                     required

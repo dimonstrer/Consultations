@@ -56,6 +56,11 @@
                         class="invalid-feedback"
                         :style="[{'display' : dateErrorState}]"
                 >Не указана дата рождения пациента</div>
+                <div
+                        v-if="!$v.patient.birthDate.between"
+                        class="invalid-feedback"
+                        :style="[{'display' : dateErrorState}]"
+                >Дата рождения должна быть в диапазоне от 01.01.1900 до {{currentDate}}</div>
             </div>
             <div class="form-group">
                 <label for="gender">Пол*</label>
@@ -97,7 +102,7 @@
     </div>
 </template>
 <script>
-    import {required} from "vuelidate/lib/validators";
+    import {between, required} from "vuelidate/lib/validators";
     import DatePicker from "vue2-datepicker";
     import moment from "moment";
     import MaskedInput from 'vue-text-mask'
@@ -116,7 +121,8 @@
                     pensionNumber: ''
                 },
                 disabled: true,
-                genderOptions: ['Мужской','Женский']
+                genderOptions: ['Мужской','Женский'],
+                currentDate: moment(new Date()).format('DD.MM.YYYY')
             }
         },
         computed: {
@@ -188,7 +194,8 @@
                     required
                 },
                 birthDate: {
-                    required
+                    required,
+                    between: between(new Date().setFullYear(1899,11,31), new Date())
                 },
                 gender: {
                     required
