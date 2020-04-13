@@ -49,13 +49,11 @@
         watch: {
             $route (toR, fromR){
                 this.page = toR.params['page'];
+                this.fetchPatients()
             }
         },
         created() {
             this.fetchPatients();
-        },
-        updated() {
-            this.fetchPatients()
         },
         methods: {
             async fetchPatients() {

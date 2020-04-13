@@ -77,14 +77,11 @@
             $route (toR, fromR){
                 this.id = toR.params['id'];
                 this.page = toR.params['page'];
+                this.fetchPatient();
             }
         },
         created(){
             this.fetchPatient();
-        },
-        updated(){
-            alert('UPDATED')
-            this.fetchPatient()
         },
         methods: {
             async fetchPatient(){
