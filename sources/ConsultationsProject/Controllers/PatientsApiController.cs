@@ -8,6 +8,7 @@ using ConsultationsProject.Models.DTO;
 using ConsultationsProject.Models.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -58,12 +59,12 @@ namespace ConsultationsProject.Controllers
             ConsultationsPageSize = config.GetValue<int>("PaginationSettings:ConsultationsPageSize");
         }
 
-        /// <summary>
+        /*/// <summary>
         /// Метод, возвращающий всех пациентов из БД.
         /// </summary>
         /// <returns>HTTP ответ, содержащий статус код и пациентов.</returns>
         /// <response code="200">Возвращает всех пациентов.</response>
-        /*[HttpGet]
+        [HttpGet]
         public ActionResult<IEnumerable<PatientDTO>> GetAll()
         {
             var patients = patientService.GetPatients().ToList();
@@ -78,22 +79,37 @@ namespace ConsultationsProject.Controllers
         /// <returns>HTTP ответ, содержащий статус код и пациентов.</returns>
         /// <response code="200">Возвращает всех пациентов.</response>
         [HttpGet]
-        public ActionResult<IEnumerable<PatientDTO>> GetAllPaged(int page = 1)
+        public ActionResult<IEnumerable<PatientDTO>> GetAllPaged(int page = 1, string patientFIO="", string patientPensionNumber="")
         {
-            var count = patientService.GetPatients().Count();
+            var patients = patientService.GetPatients().AsEnumerable();
+
+            if (!String.IsNullOrEmpty(patientFIO))
+            {
+                patients = patients.Where(x => EF.Functions.Like
+                (String.Concat(x.FirstName, " ", x.LastName, " ", x.Patronymic), "%" + patientFIO + "%"));
+            }
+            if (!String.IsNullOrEmpty(patientPensionNumber))
+            {
+                patients = patients.Where(x => EF.Functions.Like(x.PensionNumber, patientPensionNumber + "%"));
+            }
+
+            var count = patients.Count();
+
             PageViewModel pageViewModel = new PageViewModel(count, page, PatientsPageSize);
             if (page <= 0 || page > pageViewModel.TotalPages)
                 page = 1;
 
-            var patients = patientService.GetPatients()
-                .Skip((page - 1) * PatientsPageSize)
-                .Take(PatientsPageSize)
-                .ToList();
-            var patientsDTO = mapper.Map<List<PatientDTO>>(patients);
+            var _patients = patients
+                    .Skip((page - 1) * ConsultationsPageSize)
+                    .Take(ConsultationsPageSize)
+                    .ToList();
+
+            var patientsDTO = mapper.Map<List<PatientDTO>>(_patients);
 
             IndexViewModel result = new IndexViewModel { PageViewModel = pageViewModel, Patients = patientsDTO };
 
-            logger.LogInformation($"Запрос вернул {patients.Count()} пациентов на странице = {page}.");
+            logger.LogInformation($"Запрос вернул {patients.Count()} пациентов на странице = {page}" +
+                $" с ФИО: {patientFIO}, СНИЛС: {patientPensionNumber}.");
             return Ok(result);
         }
 

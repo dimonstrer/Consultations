@@ -1,5 +1,6 @@
 <template>
     <div>
+        <input class="form-control" type="text" @change="fetchPatients" v-model.lazy="searchQuery" placeholder="Введите ФИО или СНИЛС">
         <table class="table table-striped">
             <thead>
             <tr>
@@ -16,6 +17,9 @@
                 :patient="patient"
                 :key="patient.PensionNumber"
                 @deletePatient="deletePatient">
+            </tr>
+            <tr v-if="pageInfo.patients.length==0">
+                <td colspan="5">Пациенты не найдены</td>
             </tr>
             </tbody>
         </table>
@@ -44,6 +48,7 @@
                     pageViewModel: {}
                 },
                 page: this.$route.params['page'],
+                searchQuery: ''
             }
         },
         watch: {
@@ -58,13 +63,17 @@
         methods: {
             async fetchPatients() {
                 let vm = this;
-                console.log(this)
-                await fetch("https://localhost:44373/api/patient-management/patients"+'?page='+this.page)
+                let url = "https://localhost:44373/api/patient-management/patients"+'?page='+this.page;
+                let num = this.searchQuery.split('-').join('').split(' ').join('');
+                if (!isNaN(num)) {
+                    url += '&patientPensionNumber=' + num;
+                }
+                else {
+                    url += '&patientFIO=' + this.searchQuery;
+                }
+                await fetch(url)
                     .then(response=>response.json())
                     .then(data =>vm.pageInfo=data);
-                // this.pageInfo.pageViewModel.hasPreviousPage = this.pageInfo.pageViewModel.hasPreviousPage == 'true';
-                // this.pageInfo.pageViewModel.hasNextPage = this.pageInfo.pageViewModel.hasNextPage == 'true';
-                console.log(this.pageInfo)
 
             },
             async deletePatient(id){
